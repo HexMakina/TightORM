@@ -1,0 +1,23 @@
+{
+    "name": "hexmakina/tight-orm",
+    "description": "TightORM",
+    "keywords": ["php", "orm"],
+    "type": "package",
+    "require": {
+        "php": ">=7.4"
+    },
+    "license": "mit",
+    "authors": [
+        {
+            "name": "HexMakina",
+            "email": "touch@hexmakina.be",
+            "homepage": "https://hexmakina.be"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "HexMakina\\TightORM\\": "/"
+        }
+    }
+}

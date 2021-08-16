@@ -5,7 +5,7 @@
     "type": "package",
     "require": {
         "php": ">=7.4",
-        "hexmakina/traitor": "0.0.*",
+        "hexmakina/traitor": "0.0.*"
 
     },
     "license": "mit",

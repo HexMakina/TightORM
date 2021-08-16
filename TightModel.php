@@ -2,16 +2,16 @@
 
 namespace HexMakina\TightORM;
 
-use \HexMakina\Crudites\{TableToModel,CruditesException,TraitIntrospector};
+use \HexMakina\Crudites\{TableToModel,CruditesException};
 use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 use \HexMakina\Crudites\Interfaces\TraceableInterface;
 use \HexMakina\Crudites\Interfaces\SelectInterface;
 use \HexMakina\TightORM\Interfaces\ModelInterface;
+use \HexMakina\Traitor\Traitor;
 
 abstract class TightModel extends TableToModel implements ModelInterface, TraceableInterface
 {
-
-    use TraitIntrospector;
+    use Traitor;
 
     public function __toString()
     {

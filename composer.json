@@ -5,6 +5,7 @@
     "type": "package",
     "require": {
         "php": ">=7.4",
+        "hexmakina/crudites": "0.0.*",
         "hexmakina/traitor": "0.0.*"
 
     },

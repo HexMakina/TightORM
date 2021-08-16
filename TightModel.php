@@ -2,10 +2,11 @@
 
 namespace HexMakina\TightORM;
 
-use \HexMakina\Crudites\{TableToModel,CruditesException};
+use \HexMakina\Crudites\{CruditesException};
 use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 use \HexMakina\Crudites\Interfaces\TraceableInterface;
 use \HexMakina\Crudites\Interfaces\SelectInterface;
+
 use \HexMakina\TightORM\Interfaces\ModelInterface;
 use \HexMakina\Traitor\Traitor;
 

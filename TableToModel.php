@@ -1,7 +1,8 @@
 <?php
 
-namespace HexMakina\Crudites;
+namespace HexMakina\TightORM;
 
+use \HexMakina\Crudites\Crudites;
 use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
 abstract class TableToModel extends Crudites

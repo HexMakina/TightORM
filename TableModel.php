@@ -5,7 +5,7 @@ namespace HexMakina\TightORM;
 use \HexMakina\Crudites\Crudites;
 use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
-abstract class TableToModel extends Crudites
+abstract class TableModel extends Crudites
 {
     //check all primary keys are set (TODO that doesn't work unles AIPK.. nice try)
     public function is_new() : bool

@@ -10,7 +10,7 @@ use \HexMakina\Crudites\Interfaces\SelectInterface;
 use \HexMakina\TightORM\Interfaces\ModelInterface;
 use \HexMakina\Traitor\Traitor;
 
-abstract class TightModel extends TableToModel implements ModelInterface, TraceableInterface
+abstract class TightModel extends TableModel implements ModelInterface, TraceableInterface
 {
     use Traitor;
 

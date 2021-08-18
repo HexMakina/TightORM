@@ -2,8 +2,8 @@
 
 namespace HexMakina\TightORM;
 
-use \HexMakina\TightORM\Interfaces\ModelInterface;
-use \HexMakina\Crudites\Interfaces\SelectInterface;
+use HexMakina\TightORM\Interfaces\ModelInterface;
+use HexMakina\Crudites\Interfaces\SelectInterface;
 
 class TightModelSelector
 {
@@ -21,22 +21,22 @@ class TightModelSelector
         $this->statement = $this->model_table->select();
     }
 
-    public function model() : ModelInterface
+    public function model(): ModelInterface
     {
         return $this->model;
     }
 
-    public function class() : string
+    public function class(): string
     {
         return $this->model_class;
     }
 
-    public function statement() : SelectInterface
+    public function statement(): SelectInterface
     {
         return $this->statement;
     }
 
-    public function select($filters = [], $options = []) : SelectInterface
+    public function select($filters = [], $options = []): SelectInterface
     {
         $this->statement = $this->model_table->select(null, $options['table_alias'] ?? get_class($this->model)::table_alias());
         // $this->statement()->table_alias($options['table_alias'] ?? get_class($this->model)::table_alias());

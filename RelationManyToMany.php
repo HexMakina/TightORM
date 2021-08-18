@@ -2,12 +2,12 @@
 
 namespace HexMakina\TightORM;
 
-use \HexMakina\Crudites\CruditesException;
-use \HexMakina\TightORM\Interfaces\ModelInterface;
+use HexMakina\Crudites\CruditesException;
+use HexMakina\TightORM\Interfaces\ModelInterface;
 
 trait RelationManyToMany
 {
-    abstract public static function model_type() : string;
+    abstract public static function model_type(): string;
 
     //------------------------------------------------------------  Data Relation
     // returns true on success, error message on failure
@@ -15,7 +15,7 @@ trait RelationManyToMany
     {
         $linked_ids = [];
         foreach ($linked_models as $m) {
-            $linked_ids[]=$m->get_id();
+            $linked_ids[] = $m->get_id();
         }
 
         return static::set_many_by_ids($linked_ids, $m);
@@ -67,7 +67,7 @@ trait RelationManyToMany
     public static function otm($k = null)
     {
         $type = static::model_type();
-        $d = ['t' => $type.'s_models', 'k' => $type.'_id', 'a' => $type.'s_otm'];
+        $d = ['t' => $type . 's_models', 'k' => $type . '_id', 'a' => $type . 's_otm'];
         return is_null($k) ? $d : $d[$k];
     }
 }

@@ -2,13 +2,13 @@
 
 namespace HexMakina\TightORM;
 
-use \HexMakina\Crudites\Crudites;
-use \HexMakina\Crudites\Interfaces\TableManipulationInterface;
+use HexMakina\Crudites\Crudites;
+use HexMakina\Crudites\Interfaces\TableManipulationInterface;
 
 abstract class TableModel extends Crudites
 {
     //check all primary keys are set (TODO that doesn't work unles AIPK.. nice try)
-    public function is_new() : bool
+    public function is_new(): bool
     {
         $match = static::table()->primary_keys_match(get_object_vars($this));
         return empty($match);
@@ -17,7 +17,7 @@ abstract class TableModel extends Crudites
     public function get_id($mode = null)
     {
         $primary_key = static::table()->auto_incremented_primary_key();
-        if (is_null($primary_key) && count($pks = static::table()->primary_keys())==1) {
+        if (is_null($primary_key) && count($pks = static::table()->primary_keys()) == 1) {
             $primary_key = current($pks);
         }
 
@@ -41,7 +41,7 @@ abstract class TableModel extends Crudites
     public function import($assoc_data)
     {
         if (!is_array($assoc_data)) {
-            throw new \Exception(__FUNCTION__.'(assoc_data) parm is not an array');
+            throw new \Exception(__FUNCTION__ . '(assoc_data) parm is not an array');
         }
 
         // shove it all up in model, god will sort them out
@@ -52,7 +52,7 @@ abstract class TableModel extends Crudites
         return $this;
     }
 
-    public static function table() : TableManipulationInterface
+    public static function table(): TableManipulationInterface
     {
         $table = static::table_name();
         $table = self::inspect($table);
@@ -60,7 +60,7 @@ abstract class TableModel extends Crudites
         return $table;
     }
 
-    public static function table_name() : string
+    public static function table_name(): string
     {
         $reflect = new \ReflectionClass(get_called_class());
 
@@ -68,7 +68,7 @@ abstract class TableModel extends Crudites
 
         if ($table_name === false) {
             $calling_class = $reflect->getShortName();
-            if (defined($const_name = 'TABLE_'.strtoupper($calling_class))) {
+            if (defined($const_name = 'TABLE_' . strtoupper($calling_class))) {
                 $table_name = constant($const_name);
             } else {
                 $table_name = strtolower($calling_class);

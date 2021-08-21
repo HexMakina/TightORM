@@ -92,7 +92,7 @@ abstract class TightModel extends TableModel implements ModelInterface
     }
 
     // return array of errors
-    public function save($operator_id, TracerInterface $tracer = null)
+    public function save($operator_id)
     {
         try {
             if (!empty($errors = $this->search_and_execute_trait_methods('before_save'))) {

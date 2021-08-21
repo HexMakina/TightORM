@@ -3,6 +3,7 @@
 namespace HexMakina\TightORM\Abilities;
 
 use HexMakina\Tracer\TracerInterface;
+use HexMakina\TightORM\Interfaces\ModelInterface;
 
 trait Traceable
 {

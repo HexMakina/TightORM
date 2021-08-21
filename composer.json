@@ -1,6 +1,6 @@
 {
     "name": "hexmakina/tight-orm",
-    "description": "TightORM",
+    "description": "TightORM, close to sql table ORM",
     "keywords": ["php", "orm"],
     "type": "package",
     "require": {

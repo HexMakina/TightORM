@@ -17,11 +17,6 @@ trait Traceable
     ;
   }
 
-  public function traceable(): bool
-  {
-    return true; // TightORM are traced by default
-  }
-
   public function traces() : array
   {
     $q = $this->get_tracer()->tracing_table()->select();

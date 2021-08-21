@@ -121,9 +121,9 @@ abstract class TightModel extends TableModel implements ModelInterface
                     return $errors;
                 }
 
-                if (!is_null($tracer) && $this->traceable()) {
-                    $tracer->trace($table_row->last_alter_query(), $operator_id, $this->get_id());
-                }
+                // if (!is_null($tracer) && $this->traceable()) {
+                //     $tracer->trace($table_row->last_alter_query(), $operator_id, $this->get_id());
+                // }
 
                 // reload row
                 $refreshed_row = static::table()->restore($table_row->export());
@@ -158,7 +158,7 @@ abstract class TightModel extends TableModel implements ModelInterface
         $this->search_and_execute_trait_methods(__FUNCTION__);
     }
 
-    public function destroy($operator_id, $tracer = null): bool
+    public function destroy($operator_id): bool
     {
         if ($this->before_destroy() === false) {
             return false;
@@ -170,9 +170,9 @@ abstract class TightModel extends TableModel implements ModelInterface
             return false;
         }
 
-        if (!is_null($tracer) && $this->traceable()) {
-            $tracer->trace($table_row->last_query(), $operator_id, $this->get_id());
-        }
+        // if (!is_null($tracer) && $this->traceable()) {
+        //     $tracer->trace($table_row->last_query(), $operator_id, $this->get_id());
+        // }
 
         $this->after_destroy();
 

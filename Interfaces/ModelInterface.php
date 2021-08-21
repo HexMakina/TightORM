@@ -2,7 +2,8 @@
 
 namespace HexMakina\TightORM\Interfaces;
 
-use HexMakina\Crudites\Interfaces\{TableManipulationInterface,TracerInterface, SelectInterface};
+use HexMakina\Crudites\Interfaces\{TableManipulationInterface, SelectInterface};
+use HexMakina\Tracer\TracerInterface;
 
 interface ModelInterface
 {

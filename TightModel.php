@@ -121,10 +121,6 @@ abstract class TightModel extends TableModel implements ModelInterface
                     return $errors;
                 }
 
-                // if (!is_null($tracer) && $this->traceable()) {
-                //     $tracer->trace($table_row->last_alter_query(), $operator_id, $this->get_id());
-                // }
-
                 // reload row
                 $refreshed_row = static::table()->restore($table_row->export());
 
@@ -169,10 +165,6 @@ abstract class TightModel extends TableModel implements ModelInterface
         if ($table_row->wipe() === false) {
             return false;
         }
-
-        // if (!is_null($tracer) && $this->traceable()) {
-        //     $tracer->trace($table_row->last_query(), $operator_id, $this->get_id());
-        // }
 
         $this->after_destroy();
 

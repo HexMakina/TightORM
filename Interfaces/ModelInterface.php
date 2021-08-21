@@ -25,10 +25,6 @@ interface ModelInterface
     public function save($operator_id);
     public function after_save();
 
-    public function before_save(): array;
-    public function save($operator_id);
-    public function after_save();
-
     public function before_destroy(): bool;
     public function destroy($operator_id): bool;
     public function after_destroy();

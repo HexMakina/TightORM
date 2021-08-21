@@ -12,7 +12,7 @@ use HexMakina\Traitor\Traitor;
 abstract class TightModel extends TableModel implements ModelInterface, TraceableInterface
 {
     use Traitor;
-
+    
     public function __toString()
     {
         return static::class_short_name() . ' #' . $this->get_id();
@@ -93,7 +93,7 @@ abstract class TightModel extends TableModel implements ModelInterface, Traceabl
     }
 
     // return array of errors
-    public function save($operator_id, $tracer = null): ?array
+    public function save($operator_id, TracerInterface $tracer = null)
     {
         try {
             if (!empty($errors = $this->search_and_execute_trait_methods('before_save'))) {

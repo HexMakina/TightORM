@@ -4,29 +4,28 @@ namespace HexMakina\TightORM;
 
 use HexMakina\Crudites\{CruditesException};
 use HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use HexMakina\Tracer\TraceableInterface;
 use HexMakina\Crudites\Interfaces\SelectInterface;
 use HexMakina\TightORM\Interfaces\ModelInterface;
 use HexMakina\Traitor\Traitor;
 
-abstract class TightModel extends TableModel implements ModelInterface, TraceableInterface
+abstract class TightModel extends TableModel implements ModelInterface
 {
     use Traitor;
-    
+
     public function __toString()
     {
         return static::class_short_name() . ' #' . $this->get_id();
     }
 
-    public function traceable(): bool
-    {
-        return true;
-    }
-
-    public function traces(): array
-    {
-        return [];
-    }
+    // public function traceable(): bool
+    // {
+    //     return true;
+    // }
+    //
+    // public function traces(): array
+    // {
+    //     return [];
+    // }
 
     public function immortal(): bool
     {

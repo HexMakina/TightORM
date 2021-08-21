@@ -3,7 +3,6 @@
 namespace HexMakina\TightORM\Interfaces;
 
 use HexMakina\Crudites\Interfaces\{TableManipulationInterface, SelectInterface};
-use HexMakina\Tracer\TracerInterface;
 
 interface ModelInterface
 {
@@ -21,12 +20,17 @@ interface ModelInterface
 
 
     public function validate(): array;
+
     public function before_save(): array;
-    public function save($operator_id, TracerInterface $tracer = null);
+    public function save($operator_id);
+    public function after_save();
+
+    public function before_save(): array;
+    public function save($operator_id);
     public function after_save();
 
     public function before_destroy(): bool;
-    public function destroy($operator_id, TracerInterface $tracer = null): bool;
+    public function destroy($operator_id): bool;
     public function after_destroy();
 
     public static function table(): TableManipulationInterface;

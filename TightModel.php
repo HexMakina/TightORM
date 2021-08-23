@@ -2,7 +2,6 @@
 
 namespace HexMakina\TightORM;
 
-use HexMakina\Crudites\{CruditesException};
 use HexMakina\Crudites\Interfaces\SelectInterface;
 use HexMakina\TightORM\Interfaces\ModelInterface;
 use HexMakina\Traitor\Traitor;
@@ -177,99 +176,12 @@ abstract class TightModel extends TableModel implements ModelInterface
         return $query;
     }
 
-    public static function exists($arg1, $arg2 = null)
-    {
-        try {
-            return self::one($arg1, $arg2);
-        } catch (CruditesException $e) {
-            return null;
-        }
-    }
-
-    /* USAGE
-    * one($primary_key_value)
-    * one($unique_column, $value)
-    */
-    public static function one($arg1, $arg2 = null)
-    {
-        $mixed_info = is_null($arg2) ? $arg1 : [$arg1 => $arg2];
-
-        $unique_identifiers = get_called_class()::table()->match_uniqueness($mixed_info);
-
-        if (empty($unique_identifiers)) {
-            throw new CruditesException('UNIQUE_IDENTIFIER_NOT_FOUND');
-        }
-
-        $Query = static::query_retrieve([], ['eager' => true])->aw_fields_eq($unique_identifiers);
-        switch (count($res = static::retrieve($Query))) {
-            case 0:
-                throw new CruditesException('INSTANCE_NOT_FOUND');
-            case 1:
-                return current($res);
-            default:
-                throw new CruditesException('SINGULAR_INSTANCE_ERROR');
-        }
-    }
-
-    public static function any($field_exact_values, $options = [])
-    {
-        $Query = static::query_retrieve([], $options)->aw_fields_eq($field_exact_values);
-        return static::retrieve($Query);
-    }
-
-    public static function filter($filters = [], $options = []): array
-    {
-        return static::retrieve(static::query_retrieve($filters, $options));
-    }
-
-    public static function listing($filters = [], $options = []): array
-    {
-        return static::retrieve(static::query_retrieve($filters, $options)); // listing as arrays for templates
-    }
-
-    // success: return PK-indexed array of results (associative array or object)
-    public static function retrieve(SelectInterface $Query): array
-    {
-        $ret = [];
-        $pk_name = implode('_', array_keys($Query->table()->primary_keys()));
-
-        if (count($pks = $Query->table()->primary_keys()) > 1) {
-            $concat_pk = sprintf('CONCAT(%s) as %s', implode(',', $pks), $pk_name);
-            $Query->select_also([$concat_pk]);
-        }
-
-        try {
-            $Query->run();
-        } catch (CruditesException $e) {
-            return [];
-        }
-
-        if ($Query->is_success()) {
-            foreach ($Query->ret_obj(get_called_class()) as $rec) {
-                  $ret[$rec->get($pk_name)] = $rec;
-            }
-        }
-
-        return $ret;
-    }
-
-    public static function get_many_by_AIPK($aipk_values)
-    {
-        if (!empty($aipk_values) && !is_null($AIPK = static::table()->auto_incremented_primary_key())) {
-            return static::retrieve(static::table()->select()->aw_numeric_in($AIPK, $aipk_values));
-        }
-
-        return null;
-    }
-
-
     //------------------------------------------------------------  Introspection & Data Validation
     /**
      * Cascade of table name guessing goes:
      * 1. Constant 'TABLE_ALIAS' defined in class
      * 2. lower-case class name
      *
-     * @throws CruditesException, if ever called from Crudites class, must be inherited call
      */
     public static function table_alias(): string
     {

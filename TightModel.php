@@ -164,15 +164,6 @@ abstract class TightModel extends TableModel implements ModelInterface
     {
         $class = get_called_class();
         $query = (new TightModelSelector(new $class()))->select($filters, $options);
-        // $query_old = self::query_retrieve_old($filters,$options);
-        //
-        // if($res = $query->compare($query_old) !== true)
-        // {
-        //   vd($res);
-        //   vd($query->statement(), 'new statement');
-        //   vd($query_old->statement(), 'old statement');
-        //   ddt('different');
-        // }
         return $query;
     }
 

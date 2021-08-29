@@ -83,7 +83,7 @@ abstract class TightModel extends TableModel implements ModelInterface
     public function save($operator_id)
     {
         try {
-            if (!empty($errors = $this->search_and_execute_trait_methods('before_save'))) {
+            if (!empty($errors = $this->traitor('before_save'))) {
                 return $errors;
             }
 
@@ -116,7 +116,7 @@ abstract class TightModel extends TableModel implements ModelInterface
                 $this->import($refreshed_row->export());
             }
 
-            $this->search_and_execute_trait_methods('after_save');
+            $this->traitor('after_save');
             $this->after_save();
         } catch (\Exception $e) {
             return [$e->getMessage()];
@@ -132,14 +132,14 @@ abstract class TightModel extends TableModel implements ModelInterface
             return false;
         }
 
-        $this->search_and_execute_trait_methods(__FUNCTION__);
+        $this->traitor(__FUNCTION__);
 
         return true;
     }
 
     public function after_destroy()
     {
-        $this->search_and_execute_trait_methods(__FUNCTION__);
+        $this->traitor(__FUNCTION__);
     }
 
     public function destroy($operator_id): bool

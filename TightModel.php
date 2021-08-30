@@ -176,18 +176,20 @@ abstract class TightModel extends TableModel implements ModelInterface
      */
     public static function table_alias(): string
     {
-      if(defined(get_called_class() . '::TABLE_ALIAS'))
-        return static::TABLE_ALIAS;
+        if (defined(get_called_class() . '::TABLE_ALIAS')) {
+            return static::TABLE_ALIAS;
+        }
 
-      return static::model_type();
+        return static::model_type();
     }
 
     public static function model_type(): string
     {
-      if(defined(get_called_class().'::MODEL_TYPE'))
-        return static::MODEL_TYPE;
+        if (defined(get_called_class() . '::MODEL_TYPE')) {
+            return static::MODEL_TYPE;
+        }
 
-      return strtolower(self::class_short_name());
+        return strtolower(self::class_short_name());
     }
 
     public static function class_short_name(): string

@@ -184,8 +184,8 @@ abstract class TightModel extends TableModel implements ModelInterface
 
     public static function model_type(): string
     {
-      if(defined(get_called_class().::'MODEL_TYPE'))
-      return static::MODEL_TYPE;
+      if(defined(get_called_class().'::MODEL_TYPE'))
+        return static::MODEL_TYPE;
 
       return strtolower(self::class_short_name());
     }

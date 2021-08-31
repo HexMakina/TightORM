@@ -2,8 +2,8 @@
 
 namespace HexMakina\TightORM;
 
-use HexMakina\TightORM\Interfaces\ModelInterface;
-use HexMakina\Crudites\Interfaces\SelectInterface;
+use \HexMakina\TightORM\Interfaces\ModelInterface;
+use \HexMakina\Crudites\Interfaces\SelectInterface;
 
 class TableModelSelector
 {

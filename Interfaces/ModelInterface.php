@@ -2,7 +2,7 @@
 
 namespace HexMakina\TightORM\Interfaces;
 
-use HexMakina\Crudites\Interfaces\{TableManipulationInterface, SelectInterface};
+use \HexMakina\Crudites\Interfaces\{TableManipulationInterface, SelectInterface};
 
 interface ModelInterface
 {

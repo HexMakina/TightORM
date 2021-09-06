@@ -30,7 +30,7 @@ abstract class TightModel extends TableModel implements ModelInterface
 
             if (!is_null($probe_res = $this->get($probe_name))) {
                 $extract_model->set($column_name, $probe_res);
-            } elseif (!$column->is_nullable() && $ignore_nullable === false) {
+            } elseif (!$column->isNullable() && $ignore_nullable === false) {
                 return null;
             }
         }
@@ -47,7 +47,7 @@ abstract class TightModel extends TableModel implements ModelInterface
             if (!is_null($column->default())) {
                 continue;
             }
-            if ($column->is_auto_incremented()) {
+            if ($column->isAutoIncremented()) {
                 continue;
             }
 

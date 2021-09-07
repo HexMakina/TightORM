@@ -5,8 +5,9 @@
     "type": "package",
     "require": {
         "php": ">=7.0",
+        "hexmakina/traitor": "0.1.*",
         "hexmakina/crudites": "0.0.*",
-        "hexmakina/traitor": "0.1.*"
+        "hexmakina/interfaces": "0.0.*"
 
     },
     "license": "mit",

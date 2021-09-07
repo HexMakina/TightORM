@@ -129,7 +129,7 @@ abstract class TableModel extends Crudites
             return [];
         }
 
-        if ($Query->is_success()) {
+        if ($Query->isSuccess()) {
             foreach ($Query->ret_obj(get_called_class()) as $rec) {
                   $ret[$rec->get($pk_name)] = $rec;
             }

@@ -58,12 +58,6 @@ abstract class TightModel extends TableModel implements ModelInterface
         return $clone;
     }
 
-    public function toggle($prop_name)
-    {
-        parent::toggle_boolean(static::table(), $prop_name, $this->get_id());
-    }
-
-
     public function validate(): array
     {
         return []; // no errors

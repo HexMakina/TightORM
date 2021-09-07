@@ -38,7 +38,7 @@ trait RelationManyToMany
         $j_table->connection()->transact();
         try {
             $res = $j_table->delete($assoc_data)->run();
-            if (!$res->is_success()) {
+            if (!$res->isSuccess()) {
                 throw new CruditesException('QUERY_FAILED');
             }
 
@@ -48,10 +48,10 @@ trait RelationManyToMany
                 $Query = $j_table->insert($join_data);
 
                 foreach ($linked_ids as $linked_id) {
-                    $Query->values([$j_table_key => $linked_id]);
+                    $Query->addBinding($j_table_key, $linked_id);
                     $res = $Query->run();
 
-                    if (!$res->is_success()) {
+                    if (!$res->isSuccess()) {
                         throw new CruditesException('QUERY_FAILED');
                     }
                 }

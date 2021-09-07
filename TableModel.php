@@ -2,10 +2,10 @@
 
 namespace HexMakina\TightORM;
 
-use \HexMakina\Crudites\Crudites;
-use \HexMakina\Crudites\CruditesException;
-use \HexMakina\Interfaces\Database\TableManipulationInterface;
-use \HexMakina\Interfaces\Database\SelectInterface;
+use HexMakina\Crudites\Crudites;
+use HexMakina\Crudites\CruditesException;
+use HexMakina\Interfaces\Database\TableManipulationInterface;
+use HexMakina\Interfaces\Database\SelectInterface;
 
 abstract class TableModel extends Crudites
 {

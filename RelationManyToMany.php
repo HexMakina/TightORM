@@ -2,8 +2,8 @@
 
 namespace HexMakina\TightORM;
 
-use \HexMakina\Crudites\CruditesException;
-use \HexMakina\Interfaces\ORM\ModelInterface;
+use HexMakina\Crudites\CruditesException;
+use HexMakina\Interfaces\ORM\ModelInterface;
 
 trait RelationManyToMany
 {

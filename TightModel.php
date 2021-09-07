@@ -2,9 +2,9 @@
 
 namespace HexMakina\TightORM;
 
-use \HexMakina\Interfaces\Database\SelectInterface;
-use \HexMakina\Interfaces\ORM\ModelInterface;
-use \HexMakina\Traitor\Traitor;
+use HexMakina\Interfaces\Database\SelectInterface;
+use HexMakina\Interfaces\ORM\ModelInterface;
+use HexMakina\Traitor\Traitor;
 
 abstract class TightModel extends TableModel implements ModelInterface
 {
@@ -97,7 +97,7 @@ abstract class TightModel extends TableModel implements ModelInterface
                     $errors = [];
 
                     foreach ($persistence_errors as $column_name => $err) {
-                        $errors[sprintf('MODEL_%s_FIELD_%s', static::model_type(), $column_name)] = 'CRUDITES_'.$err;
+                        $errors[sprintf('MODEL_%s_FIELD_%s', static::model_type(), $column_name)] = 'CRUDITES_' . $err;
                     }
 
                     return $errors;
@@ -113,7 +113,6 @@ abstract class TightModel extends TableModel implements ModelInterface
             $this->traitor('after_save');
             $this->after_save();
         } catch (\Exception $e) {
-
             return [$e->getMessage()];
         }
 

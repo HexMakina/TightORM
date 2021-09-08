@@ -11,16 +11,16 @@ abstract class TableModel extends Crudites
 {
 
     //check all primary keys are set (FIXME that doesn't work unles AIPK.. nice try)
-    public function is_new(): bool
+    public function isNew(): bool
     {
-        $match = static::table()->primary_keys_match(get_object_vars($this));
+        $match = static::table()->primaryKeysMatch(get_object_vars($this));
         return empty($match);
     }
 
-    public function get_id($mode = null)
+    public function getId($mode = null)
     {
-        $primary_key = static::table()->auto_incremented_primary_key();
-        if (is_null($primary_key) && count($pks = static::table()->primary_keys()) == 1) {
+        $primary_key = static::table()->autoIncrementedPrimaryKey();
+        if (is_null($primary_key) && count($pks = static::table()->primaryKeys()) == 1) {
             $primary_key = current($pks);
         }
 
@@ -84,14 +84,14 @@ abstract class TableModel extends Crudites
 
     public function to_table_row($operator_id = null)
     {
-        if (!is_null($operator_id) && $this->is_new() && is_null($this->get('created_by'))) {
+        if (!is_null($operator_id) && $this->isNew() && is_null($this->get('created_by'))) {
             $this->set('created_by', $operator_id);
         }
 
         $model_data = get_object_vars($this);
 
         // 1. Produce OR restore a row
-        if ($this->is_new()) {
+        if ($this->isNew()) {
             $table_row = static::table()->produce($model_data);
         } else {
             $table_row = static::table()->restore($model_data);
@@ -116,9 +116,9 @@ abstract class TableModel extends Crudites
     public static function retrieve(SelectInterface $Query): array
     {
         $ret = [];
-        $pk_name = implode('_', array_keys($Query->table()->primary_keys()));
+        $pk_name = implode('_', array_keys($Query->table()->primaryKeys()));
 
-        if (count($pks = $Query->table()->primary_keys()) > 1) {
+        if (count($pks = $Query->table()->primaryKeys()) > 1) {
             $concat_pk = sprintf('CONCAT(%s) as %s', implode(',', $pks), $pk_name);
             $Query->select_also([$concat_pk]);
         }
@@ -193,7 +193,7 @@ abstract class TableModel extends Crudites
 
     public static function get_many_by_AIPK($aipk_values)
     {
-        if (!empty($aipk_values) && !is_null($AIPK = static::table()->auto_incremented_primary_key())) {
+        if (!empty($aipk_values) && !is_null($AIPK = static::table()->autoIncrementedPrimaryKey())) {
             return static::retrieve(static::table()->select()->aw_numeric_in($AIPK, $aipk_values));
         }
 

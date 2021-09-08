@@ -12,7 +12,7 @@ abstract class TightModel extends TableModel implements ModelInterface
 
     public function __toString()
     {
-        return static::class_short_name() . ' #' . $this->get_id();
+        return static::class_short_name() . ' #' . $this->getId();
     }
 
     public function immortal(): bool
@@ -92,7 +92,7 @@ abstract class TightModel extends TableModel implements ModelInterface
             $table_row = $this->to_table_row($operator_id);
 
 
-            if ($table_row->is_altered()) { // someting to save ?
+            if ($table_row->isAltered()) { // someting to save ?
                 if (!empty($persistence_errors = $table_row->persist())) { // validate and persist
                     $errors = [];
 
@@ -122,7 +122,7 @@ abstract class TightModel extends TableModel implements ModelInterface
     // returns false on failure or last executed delete query
     public function before_destroy(): bool
     {
-        if ($this->is_new() || $this->immortal()) {
+        if ($this->isNew() || $this->immortal()) {
             return false;
         }
 

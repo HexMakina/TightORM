@@ -146,7 +146,7 @@ abstract class TableModel extends Crudites
     {
         $mixed_info = is_null($arg2) ? $arg1 : [$arg1 => $arg2];
 
-        $unique_identifiers = get_called_class()::table()->match_uniqueness($mixed_info);
+        $unique_identifiers = get_called_class()::table()->matchUniqueness($mixed_info);
 
         if (empty($unique_identifiers)) {
             throw new CruditesException('UNIQUE_IDENTIFIER_NOT_FOUND');

@@ -38,8 +38,8 @@ class TightModelSelector
 
     public function select($filters = [], $options = []): SelectInterface
     {
-        $this->statement = $this->model_table->select(null, $options['table_alias'] ?? get_class($this->model)::table_alias());
-        // $this->statement()->table_alias($options['table_alias'] ?? get_class($this->model)::table_alias());
+        $this->statement = $this->model_table->select(null, $options['table_alias'] ?? get_class($this->model)::tableAlias());
+        // $this->statement()->tableAlias($options['table_alias'] ?? get_class($this->model)::tableAlias());
 
         if (!isset($options['eager']) || $options['eager'] !== false) {
             $this->statement()->eager();
@@ -57,11 +57,11 @@ class TightModelSelector
 
         if (is_subclass_of($this->model(), '\HexMakina\kadro\Models\Interfaces\EventInterface')) {
             $this->filter_event($filters['date_start'] ?? null, $filters['date_stop'] ?? null);
-            $this->statement()->order_by([$this->model()->event_field(), 'DESC']);
+            $this->statement()->orderBy([$this->model()->event_field(), 'DESC']);
         }
 
         if (isset($filters['content'])) {
-            $this->statement()->aw_filter_content($filters['content']);
+            $this->statement()->whereFilterContent($filters['content']);
         }
 
         if (isset($filters['ids'])) {
@@ -74,7 +74,7 @@ class TightModelSelector
     public function option_order_by($order_bys)
     {
         if (is_string($order_bys)) {
-            $this->statement()->order_by($order_bys);
+            $this->statement()->orderBy($order_bys);
         } elseif (is_array($order_bys)) { // TODO commenting required about the array situation
             foreach ($order_bys as $order_by) {
                 if (!isset($order_by[2])) {
@@ -82,7 +82,7 @@ class TightModelSelector
                 }
 
                 list($order_table, $order_field, $order_direction) = $order_by;
-                $this->statement()->order_by([$order_table ?? '', $order_field, $order_direction]);
+                $this->statement()->orderBy([$order_table ?? '', $order_field, $order_direction]);
             }
         }
     }
@@ -90,23 +90,23 @@ class TightModelSelector
     public function filter_event($date_start = null, $date_stop = null)
     {
         if (!empty($date_start)) {
-            $this->statement()->aw_gte($this->model()->event_field(), $date_start, $this->statement()->table_label(), ':filter_date_start');
+            $this->statement()->whereGTE($this->model()->event_field(), $date_start, $this->statement()->tableLabel(), ':filter_date_start');
         }
 
         if (!empty($date_stop)) {
-            $this->statement()->aw_lte($this->model()->event_field(), $date_stop, $this->statement()->table_label(), ':filter_date_stop');
+            $this->statement()->whereLTE($this->model()->event_field(), $date_stop, $this->statement()->tableLabel(), ':filter_date_stop');
         }
       //
       // if(empty($options['order_by']))
-      //   $this->statement()->order_by([$this->model()->event_field(), 'DESC']);
+      //   $this->statement()->orderBy([$this->model()->event_field(), 'DESC']);
     }
 
     public function filter_with_ids($ids)
     {
         if (empty($ids)) {
-            $this->statement()->and_where('1=0'); // TODO: this is a new low.. find another way to cancel query
+            $this->statement()->where('1=0'); // TODO: this is a new low.. find another way to cancel query
         } else {
-            $this->statement()->aw_numeric_in('id', $ids);
+            $this->statement()->whereNumericIn('id', $ids);
         }
     }
 

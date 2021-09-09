@@ -57,13 +57,13 @@ abstract class TableModel extends Crudites
 
     public static function table(): TableManipulationInterface
     {
-        $table = static::table_name();
+        $table = static::relationalMappingName();
         $table = self::inspect($table);
 
         return $table;
     }
 
-    public static function table_name(): string
+    public static function relationalMappingName(): string
     {
         $reflect = new \ReflectionClass(get_called_class());
 
@@ -120,7 +120,7 @@ abstract class TableModel extends Crudites
 
         if (count($pks = $Query->table()->primaryKeys()) > 1) {
             $concat_pk = sprintf('CONCAT(%s) as %s', implode(',', $pks), $pk_name);
-            $Query->select_also([$concat_pk]);
+            $Query->selectAlso([$concat_pk]);
         }
 
         try {
@@ -130,7 +130,7 @@ abstract class TableModel extends Crudites
         }
 
         if ($Query->isSuccess()) {
-            foreach ($Query->ret_obj(get_called_class()) as $rec) {
+            foreach ($Query->retObj(get_called_class()) as $rec) {
                   $ret[$rec->get($pk_name)] = $rec;
             }
         }
@@ -152,7 +152,7 @@ abstract class TableModel extends Crudites
             throw new CruditesException('UNIQUE_IDENTIFIER_NOT_FOUND');
         }
 
-        $Query = static::query_retrieve([], ['eager' => true])->aw_fields_eq($unique_identifiers);
+        $Query = static::query_retrieve([], ['eager' => true])->whereFieldsEQ($unique_identifiers);
         switch (count($res = static::retrieve($Query))) {
             case 0:
                 throw new CruditesException('INSTANCE_NOT_FOUND');
@@ -175,7 +175,7 @@ abstract class TableModel extends Crudites
 
     public static function any($field_exact_values, $options = [])
     {
-        $Query = static::query_retrieve([], $options)->aw_fields_eq($field_exact_values);
+        $Query = static::query_retrieve([], $options)->whereFieldsEQ($field_exact_values);
         return static::retrieve($Query);
     }
 
@@ -194,7 +194,7 @@ abstract class TableModel extends Crudites
     public static function get_many_by_AIPK($aipk_values)
     {
         if (!empty($aipk_values) && !is_null($AIPK = static::table()->autoIncrementedPrimaryKey())) {
-            return static::retrieve(static::table()->select()->aw_numeric_in($AIPK, $aipk_values));
+            return static::retrieve(static::table()->select()->whereNumericIn($AIPK, $aipk_values));
         }
 
         return null;

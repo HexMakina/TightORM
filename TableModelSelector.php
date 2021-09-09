@@ -19,7 +19,7 @@ class TableModelSelector
         $class = get_class($this->model);
         $table = $class::table();
 
-        $Query = $table->select(null, $class::table_alias());
+        $Query = $table->select(null, $class::tableAlias());
 
 
         if (!isset($options['eager']) || $options['eager'] !== false) {
@@ -29,33 +29,33 @@ class TableModelSelector
 
         foreach ($table->columns() as $column_name => $column) {
             if (isset($filters[$column_name]) && is_string($filters[$column_name])) {
-                $Query->aw_eq($column_name, $filters[$column_name]);
+                $Query->whereEQ($column_name, $filters[$column_name]);
             }
         }
 
         if (is_subclass_of($event = new $class(), '\HexMakina\kadro\Models\Interfaces\EventInterface')) {
             if (!empty($filters['date_start'])) {
-                $Query->aw_gte($event->event_field(), $filters['date_start'], $Query->table_label(), ':filter_date_start');
+                $Query->whereGTE($event->event_field(), $filters['date_start'], $Query->tableLabel(), ':filter_date_start');
             }
 
             if (!empty($filters['date_stop'])) {
-                $Query->aw_lte($event->event_field(), $filters['date_stop'], $Query->table_label(), ':filter_date_stop');
+                $Query->whereLTE($event->event_field(), $filters['date_stop'], $Query->tableLabel(), ':filter_date_stop');
             }
 
             if (empty($options['order_by'])) {
-                $Query->order_by([$event->event_field(), 'DESC']);
+                $Query->orderBy([$event->event_field(), 'DESC']);
             }
         }
 
         if (isset($filters['content'])) {
-            $Query->aw_filter_content($filters['content']);
+            $Query->whereFilterContent($filters['content']);
         }
 
         if (isset($filters['ids'])) {
             if (empty($filters['ids'])) {
-                $Query->and_where('1=0'); // TODO: this is a new low.. find another way to cancel query
+                $Query->where('1=0'); // TODO: this is a new low.. find another way to cancel query
             } else {
-                $Query->aw_numeric_in('id', $filters['ids'], $Query->table_label());
+                $Query->whereNumericIn('id', $filters['ids'], $Query->tableLabel());
             }
         }
 
@@ -63,7 +63,7 @@ class TableModelSelector
             $order_by = $options['order_by'];
 
             if (is_string($order_by)) {
-                $Query->order_by($order_by);
+                $Query->orderBy($order_by);
             } elseif (is_array($order_by)) {
                 foreach ($options['order_by'] as $order_by) {
                     if (!isset($order_by[2])) {
@@ -71,7 +71,7 @@ class TableModelSelector
                     }
 
                     list($order_table, $order_field, $order_direction) = $order_by;
-                    $Query->order_by([$order_table ?? '', $order_field, $order_direction]);
+                    $Query->orderBy([$order_table ?? '', $order_field, $order_direction]);
                 }
             }
         }

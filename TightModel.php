@@ -26,7 +26,7 @@ abstract class TightModel extends TableModel implements ModelInterface
 
         $extraction_table = $extraction_class::table();
         foreach ($extraction_table->columns() as $column_name => $column) {
-            $probe_name = $extraction_class::table_alias() . '_' . $column_name;
+            $probe_name = $extraction_class::tableAlias() . '_' . $column_name;
 
             if (!is_null($probe_res = $this->get($probe_name))) {
                 $extract_model->set($column_name, $probe_res);
@@ -168,7 +168,7 @@ abstract class TightModel extends TableModel implements ModelInterface
      * 2. lower-case class name
      *
      */
-    public static function table_alias(): string
+    public static function tableAlias(): string
     {
         if (defined(get_called_class() . '::TABLE_ALIAS')) {
             return get_called_class()::TABLE_ALIAS;
@@ -192,7 +192,7 @@ abstract class TightModel extends TableModel implements ModelInterface
     }
 
 
-    public static function select_also()
+    public static function selectAlso()
     {
         return ['*'];
     }

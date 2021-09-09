@@ -2,8 +2,8 @@
 
 namespace HexMakina\TightORM;
 
-use HexMakina\Interfaces\ORM\ModelInterface;
-use HexMakina\Interfaces\Database\SelectInterface;
+use HexMakina\BlackBox\ORM\ModelInterface;
+use HexMakina\BlackBox\Database\SelectInterface;
 
 class TableModelSelector
 {

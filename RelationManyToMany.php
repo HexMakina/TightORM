@@ -3,7 +3,7 @@
 namespace HexMakina\TightORM;
 
 use HexMakina\Crudites\CruditesException;
-use HexMakina\Interfaces\ORM\ModelInterface;
+use HexMakina\BlackBox\ORM\ModelInterface;
 
 trait RelationManyToMany
 {

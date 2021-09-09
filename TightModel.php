@@ -2,8 +2,8 @@
 
 namespace HexMakina\TightORM;
 
-use HexMakina\Interfaces\Database\SelectInterface;
-use HexMakina\Interfaces\ORM\ModelInterface;
+use HexMakina\BlackBox\Database\SelectInterface;
+use HexMakina\BlackBox\ORM\ModelInterface;
 use HexMakina\Traitor\Traitor;
 
 abstract class TightModel extends TableModel implements ModelInterface

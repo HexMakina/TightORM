@@ -110,7 +110,7 @@ class TightModelSelector
         }
     }
 
-    public function filter_with_fields($filters, $filter_mode = 'aw_eq')
+    public function filter_with_fields($filters, $filter_mode = 'whereEQ')
     {
         foreach ($this->model_table->columns() as $column_name => $column) {
             if (isset($filters[$column_name]) && is_string($filters[$column_name])) {

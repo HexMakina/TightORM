@@ -19,24 +19,24 @@ abstract class TightModel extends TableModel implements ModelInterface
     {
         return self::IMMORTAL_BY_DEFAULT;
     }
-
-    public function extract(ModelInterface $extract_model, $ignore_nullable = false)
-    {
-        $extraction_class = get_class($extract_model);
-
-        $extraction_table = $extraction_class::table();
-        foreach ($extraction_table->columns() as $column_name => $column) {
-            $probe_name = $extraction_class::tableAlias() . '_' . $column_name;
-
-            if (!is_null($probe_res = $this->get($probe_name))) {
-                $extract_model->set($column_name, $probe_res);
-            } elseif (!$column->isNullable() && $ignore_nullable === false) {
-                return null;
-            }
-        }
-
-        return $extract_model;
-    }
+    // 
+    // public function extract(ModelInterface $extract_model, $ignore_nullable = false)
+    // {
+    //     $extraction_class = get_class($extract_model);
+    //
+    //     $extraction_table = $extraction_class::table();
+    //     foreach ($extraction_table->columns() as $column_name => $column) {
+    //         $probe_name = $extraction_class::tableAlias() . '_' . $column_name;
+    //
+    //         if (!is_null($probe_res = $this->get($probe_name))) {
+    //             $extract_model->set($column_name, $probe_res);
+    //         } elseif (!$column->isNullable() && $ignore_nullable === false) {
+    //             return null;
+    //         }
+    //     }
+    //
+    //     return $extract_model;
+    // }
 
     public function copy()
     {

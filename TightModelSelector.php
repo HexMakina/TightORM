@@ -4,6 +4,7 @@ namespace HexMakina\TightORM;
 
 use HexMakina\BlackBox\ORM\ModelInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
+use HexMakina\Crudites\Queries\AutoJoin;
 
 class TightModelSelector
 {
@@ -42,7 +43,7 @@ class TightModelSelector
         // $this->statement()->tableAlias($options['table_alias'] ?? get_class($this->model)::tableAlias());
 
         if (!isset($options['eager']) || $options['eager'] !== false) {
-            $this->statement()->eager();
+            AutoJoin::eager($this->statement());
         }
 
         if (isset($options['order_by'])) {

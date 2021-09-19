@@ -4,6 +4,8 @@ namespace HexMakina\TightORM;
 
 use HexMakina\BlackBox\ORM\ModelInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
+use HexMakina\Crudites\Queries\AutoJoin;
+
 
 class TableModelSelector
 {
@@ -23,7 +25,7 @@ class TableModelSelector
 
 
         if (!isset($options['eager']) || $options['eager'] !== false) {
-            $Query->eager();
+            AutoJoin::eager($Query);
         }
 
 

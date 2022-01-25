@@ -114,7 +114,7 @@ class TightModelSelector
     {
         foreach ($this->model_table->columns() as $column_name => $column) {
             if (isset($filters[$column_name]) && is_string($filters[$column_name])) {
-                $this->statement()->$filter_mode($column_name, $filters[$column_name]);
+                $this->statement()->$filter_mode($column_name, $filters[$column_name], $this->model_table->name());
             }
         }
     }

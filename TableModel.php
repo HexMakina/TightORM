@@ -4,24 +4,23 @@ namespace HexMakina\TightORM;
 
 use HexMakina\Crudites\Crudites;
 use HexMakina\Crudites\CruditesException;
-
-use HexMakina\Crudites\Interfaces\TableManipulationInterface;
-use HexMakina\Crudites\Interfaces\SelectInterface;
+use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\SelectInterface;
 
 abstract class TableModel extends Crudites
 {
 
     //check all primary keys are set (FIXME that doesn't work unles AIPK.. nice try)
-    public function is_new(): bool
+    public function isNew(): bool
     {
-        $match = static::table()->primary_keys_match(get_object_vars($this));
+        $match = static::table()->primaryKeysMatch(get_object_vars($this));
         return empty($match);
     }
 
-    public function get_id($mode = null)
+    public function getId($mode = null)
     {
-        $primary_key = static::table()->auto_incremented_primary_key();
-        if (is_null($primary_key) && count($pks = static::table()->primary_keys()) == 1) {
+        $primary_key = static::table()->autoIncrementedPrimaryKey();
+        if (is_null($primary_key) && count($pks = static::table()->primaryKeys()) == 1) {
             $primary_key = current($pks);
         }
 
@@ -58,13 +57,13 @@ abstract class TableModel extends Crudites
 
     public static function table(): TableManipulationInterface
     {
-        $table = static::table_name();
+        $table = static::relationalMappingName();
         $table = self::inspect($table);
 
         return $table;
     }
 
-    public static function table_name(): string
+    public static function relationalMappingName(): string
     {
         $reflect = new \ReflectionClass(get_called_class());
 
@@ -85,14 +84,14 @@ abstract class TableModel extends Crudites
 
     public function to_table_row($operator_id = null)
     {
-        if (!is_null($operator_id) && $this->is_new() && is_null($this->get('created_by'))) {
+        if (!is_null($operator_id) && $this->isNew() && is_null($this->get('created_by'))) {
             $this->set('created_by', $operator_id);
         }
 
         $model_data = get_object_vars($this);
 
         // 1. Produce OR restore a row
-        if ($this->is_new()) {
+        if ($this->isNew()) {
             $table_row = static::table()->produce($model_data);
         } else {
             $table_row = static::table()->restore($model_data);
@@ -117,11 +116,11 @@ abstract class TableModel extends Crudites
     public static function retrieve(SelectInterface $Query): array
     {
         $ret = [];
-        $pk_name = implode('_', array_keys($Query->table()->primary_keys()));
+        $pk_name = implode('_', array_keys($Query->table()->primaryKeys()));
 
-        if (count($pks = $Query->table()->primary_keys()) > 1) {
+        if (count($pks = $Query->table()->primaryKeys()) > 1) {
             $concat_pk = sprintf('CONCAT(%s) as %s', implode(',', $pks), $pk_name);
-            $Query->select_also([$concat_pk]);
+            $Query->selectAlso([$concat_pk]);
         }
 
         try {
@@ -130,8 +129,8 @@ abstract class TableModel extends Crudites
             return [];
         }
 
-        if ($Query->is_success()) {
-            foreach ($Query->ret_obj(get_called_class()) as $rec) {
+        if ($Query->isSuccess()) {
+            foreach ($Query->retObj(get_called_class()) as $rec) {
                   $ret[$rec->get($pk_name)] = $rec;
             }
         }
@@ -147,13 +146,13 @@ abstract class TableModel extends Crudites
     {
         $mixed_info = is_null($arg2) ? $arg1 : [$arg1 => $arg2];
 
-        $unique_identifiers = get_called_class()::table()->match_uniqueness($mixed_info);
+        $unique_identifiers = get_called_class()::table()->matchUniqueness($mixed_info);
 
         if (empty($unique_identifiers)) {
             throw new CruditesException('UNIQUE_IDENTIFIER_NOT_FOUND');
         }
 
-        $Query = static::query_retrieve([], ['eager' => true])->aw_fields_eq($unique_identifiers);
+        $Query = static::query_retrieve([], ['eager' => true])->whereFieldsEQ($unique_identifiers);
         switch (count($res = static::retrieve($Query))) {
             case 0:
                 throw new CruditesException('INSTANCE_NOT_FOUND');
@@ -176,7 +175,7 @@ abstract class TableModel extends Crudites
 
     public static function any($field_exact_values, $options = [])
     {
-        $Query = static::query_retrieve([], $options)->aw_fields_eq($field_exact_values);
+        $Query = static::query_retrieve([], $options)->whereFieldsEQ($field_exact_values);
         return static::retrieve($Query);
     }
 
@@ -194,12 +193,10 @@ abstract class TableModel extends Crudites
 
     public static function get_many_by_AIPK($aipk_values)
     {
-        if (!empty($aipk_values) && !is_null($AIPK = static::table()->auto_incremented_primary_key())) {
-            return static::retrieve(static::table()->select()->aw_numeric_in($AIPK, $aipk_values));
+        if (!empty($aipk_values) && !is_null($AIPK = static::table()->autoIncrementedPrimaryKey())) {
+            return static::retrieve(static::table()->select()->whereNumericIn($AIPK, $aipk_values));
         }
 
         return null;
     }
-
-
 }

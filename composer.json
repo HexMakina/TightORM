@@ -21,7 +21,10 @@
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "HexMakina\\TightORM\\": "/"
+            "HexMakina\\TightORM\\": "/src"
         }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "1.8.x-dev"
     }
 }

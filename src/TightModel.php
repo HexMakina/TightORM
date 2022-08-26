@@ -20,6 +20,8 @@ abstract class TightModel extends TableModel implements ModelInterface
         return self::IMMORTAL_BY_DEFAULT;
     }
 
+    // creates new instance, copy data from $this
+    // does not copy fields with default and AI field
     public function copy()
     {
         $class = get_called_class();
@@ -36,6 +38,7 @@ abstract class TightModel extends TableModel implements ModelInterface
             $clone->set($column_name, $this->get($column_name));
         }
 
+        // TODO: assuming created_by, must be a function that returns the creation tracking field, make an interface for heaven's sake
         unset($clone->created_by);
         return $clone;
     }
@@ -55,29 +58,30 @@ abstract class TightModel extends TableModel implements ModelInterface
         return true;
     }
 
-    // return array of errors
+    // return array of errors on failure
+    // updates the model on success
     public function save($operator_id)
     {
         try {
-            if (!empty($errors = $this->traitor('before_save'))) {
-                return $errors;
-            }
-            if (!empty($errors = $this->before_save())) {
-                return $errors;
-            }
 
-            if (!empty($errors = $this->validate())) { // Model level validation
-                return $errors;
+            // errors detection befire saving
+            $errors = [];
+            if(empty($errors = $this->traitor('before_save'))){
+              if(empty($errors = $this->before_save()){
+                $errors = $this->validate();
+              }
             }
+            if (!empty($errors))
+              return $errors;
 
-            //1 tight model *always* match a single table row
+
+            // a tight model *always* match a single table row
             $table_row = $this->to_table_row($operator_id);
 
 
             if ($table_row->isAltered()) { // someting to save ?
                 if (!empty($persistence_errors = $table_row->persist())) { // validate and persist
                     $errors = [];
-
                     foreach ($persistence_errors as $column_name => $err) {
                         $errors[sprintf('MODEL_%s_FIELD_%s', static::model_type(), $column_name)] = 'CRUDITES_' . $err;
                     }
@@ -94,6 +98,7 @@ abstract class TightModel extends TableModel implements ModelInterface
 
             $this->traitor('after_save');
             $this->after_save();
+
         } catch (\Exception $e) {
             return [$e->getMessage()];
         }

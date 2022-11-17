@@ -11,18 +11,18 @@ trait RelationManyToMany
 
     //------------------------------------------------------------  Data Relation
     // returns true on success, error message on failure
-    public static function setMany($linked_models, ModelInterface $m)
+    public static function setMany($linked_models, ModelInterface $model)
     {
         $linked_ids = [];
-        foreach ($linked_models as $m) {
-            $linked_ids[] = $m->getId();
+        foreach ($linked_models as $model) {
+            $linked_ids[] = $model->getId();
         }
 
-        return static::setManyByIds($linked_ids, $m);
+        return static::setManyByIds($linked_ids, $model);
     }
 
     // returns true on success, error message on failure
-    public static function setManyByIds($linked_ids, ModelInterface $m)
+    public static function setManyByIds($linked_ids, ModelInterface $model)
     {
         $join_info = static::otm();
 
@@ -33,7 +33,7 @@ trait RelationManyToMany
             throw new CruditesException('ERR_JOIN_INFO');
         }
 
-        $assoc_data = ['model_id' => $m->getId(), 'model_type' => get_class($m)::model_type()];
+        $assoc_data = ['model_id' => $model->getId(), 'model_type' => get_class($model)::model_type()];
 
         $j_table->connection()->transact();
         try {
@@ -56,11 +56,13 @@ trait RelationManyToMany
                     }
                 }
             }
+
             $j_table->connection()->commit();
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             $j_table->connection()->rollback();
-            return $e->getMessage();
+            return $exception->getMessage();
         }
+
         return true;
     }
 

@@ -9,11 +9,11 @@ use HexMakina\Crudites\Queries\AutoJoin;
 
 class TableModelSelector
 {
-    private $model;
+    private \HexMakina\BlackBox\ORM\ModelInterface $model;
 
-    public function __construct(ModelInterface $m)
+    public function __construct(ModelInterface $model)
     {
-        $this->model = $m;
+        $this->model = $model;
     }
 
     public function select($filters = [], $options = []): SelectInterface
@@ -30,9 +30,13 @@ class TableModelSelector
 
 
         foreach ($table->columns() as $column_name => $column) {
-            if (isset($filters[$column_name]) && is_string($filters[$column_name])) {
-                $Query->whereEQ($column_name, $filters[$column_name]);
+            if (!isset($filters[$column_name])) {
+                continue;
             }
+            if (!is_string($filters[$column_name])) {
+                continue;
+            }
+            $Query->whereEQ($column_name, $filters[$column_name]);
         }
 
         if (is_subclass_of($event = new $class(), '\HexMakina\kadro\Models\Interfaces\EventInterface')) {

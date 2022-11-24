@@ -10,6 +10,8 @@ use HexMakina\BlackBox\Database\SelectInterface;
 
 abstract class Model extends Row
 {
+    // returns the value of the PK, whatever it's name
+    // returns the name of the PK, if $mode === 'name'
     public function id($mode = null)
     {
         $primary_key = $this->table()->autoIncrementedPrimaryKey();
@@ -21,6 +23,7 @@ abstract class Model extends Row
         return $mode === 'name' ? $primary_key->name() : $this->get($primary_key->name());
     }
 
+    // Model might have properties, if not, use row data
     public function get($prop_name)
     {
         if (property_exists($this, $prop_name) === true) {
@@ -30,12 +33,15 @@ abstract class Model extends Row
         return parent::get($prop_name);
     }
 
+    // Model might have properties, if not, use row data
     public function set($prop_name, $value)
     {
-        if (property_exists($this, $prop_name) === true) {
+        if (property_exists($this, $prop_name) === true)
         {
             $this->$prop_name = $value;
         }
-        else parent::set($prop_name, $value);
+        else {
+          parent::set($prop_name, $value);
+        }
     }
 }

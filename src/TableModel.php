@@ -146,15 +146,13 @@ abstract class TableModel extends Crudites
     {
         $datass = [];
 
-        if(!is_null($arg2))
+        if (!is_null($arg2)) {
             $datass = [$arg1 => $arg2];
-        elseif(!is_array($arg1) && count(get_called_class()::table()->primaryKeys()) === 1){
+        } elseif (!is_array($arg1) && count(get_called_class()::table()->primaryKeys()) === 1) {
             $datass = [current(get_called_class()::table()->primaryKeys())->name() => $arg1];
-        }
-        elseif(is_array($arg1)){
-          $datass = $arg1;
-        }
-        else{
+        } elseif (is_array($arg1)) {
+            $datass = $arg1;
+        } else {
             throw new CruditesException('ARGUMENTS_ARE_NOT_ACTIONNABLE');
         }
 

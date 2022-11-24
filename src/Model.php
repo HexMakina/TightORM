@@ -36,12 +36,10 @@ abstract class Model extends Row
     // Model might have properties, if not, use row data
     public function set($prop_name, $value)
     {
-        if (property_exists($this, $prop_name) === true)
-        {
+        if (property_exists($this, $prop_name) === true) {
             $this->$prop_name = $value;
-        }
-        else {
-          parent::set($prop_name, $value);
+        } else {
+            parent::set($prop_name, $value);
         }
     }
 }

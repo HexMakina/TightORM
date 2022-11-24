@@ -144,9 +144,21 @@ abstract class TableModel extends Crudites
     */
     public static function one($arg1, $arg2 = null)
     {
-        $mixed_info = is_null($arg2) ? $arg1 : [$arg1 => $arg2];
+        $datass = [];
 
-        $unique_identifiers = get_called_class()::table()->matchUniqueness($mixed_info);
+        if(!is_null($arg2))
+            $datass = [$arg1 => $arg2];
+        elseif(!is_array($arg1) && count(get_called_class()::table()->primaryKeys()) === 1){
+            $datass = [current(get_called_class()::table()->primaryKeys())->name() => $arg1];
+        }
+        elseif(is_array($arg1)){
+          $datass = $arg1;
+        }
+        else{
+            throw new CruditesException('ARGUMENTS_ARE_NOT_ACTIONNABLE');
+        }
+
+        $unique_identifiers = get_called_class()::table()->matchUniqueness($datass);
 
         if (empty($unique_identifiers)) {
             throw new CruditesException('UNIQUE_IDENTIFIER_NOT_FOUND');

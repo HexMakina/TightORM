@@ -66,8 +66,10 @@ abstract class TightModel extends TableModel implements ModelInterface
 
             // errors detection befire saving
             $errors = [];
-            if(empty($errors = $this->traitor('before_save'))){
-              if(empty($errors = $this->before_save()){
+            if(empty($errors = $this->traitor('before_save')))
+            {
+              if(empty($errors = $this->before_save()))
+              {
                 $errors = $this->validate();
               }
             }
@@ -128,7 +130,6 @@ abstract class TightModel extends TableModel implements ModelInterface
         if ($this->before_destroy() === false) {
             return false;
         }
-
         $table_row = static::table()->restore(get_object_vars($this));
 
         if ($table_row->wipe() === false) {
@@ -143,7 +144,8 @@ abstract class TightModel extends TableModel implements ModelInterface
     //------------------------------------------------------------  Data Retrieval
     public static function query_retrieve($filters = [], $options = []): SelectInterface
     {
-        $class = get_called_class();
+        $class = static::class;
+
         $query = (new TightModelSelector(new $class()))->select($filters, $options);
         return $query;
     }

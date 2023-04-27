@@ -65,8 +65,8 @@ class TightModelSelector
             $this->statement()->whereFilterContent($filters['content']);
         }
 
-        if (isset($filters['ids'])) {
-            $this->filter_with_ids($filters['ids']);
+        if (isset($filters['ids']) && is_array($filters['ids'])) {
+            $this->filter_with_ids(array_filter($filters['ids'], function($value) { return !is_null($value); }));
         }
 
         return $this->statement();

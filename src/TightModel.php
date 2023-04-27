@@ -83,7 +83,10 @@ abstract class TightModel extends TableModel implements ModelInterface
                 if (!empty($persistence_errors = $table_row->persist())) { // validate and persist
                     $errors = [];
                     foreach ($persistence_errors as $column_name => $err) {
-                        $errors[sprintf('MODEL_%s_FIELD_%s', static::model_type(), $column_name)] = 'CRUDITES_' . $err;
+                        if(is_numeric($column_name))
+                            $errors[]=$err;
+                        else
+                            $errors[sprintf('MODEL_%s_FIELD_%s', static::model_type(), $column_name)] = $err;
                     }
 
                     return $errors;
@@ -142,7 +145,6 @@ abstract class TightModel extends TableModel implements ModelInterface
     public static function query_retrieve($filters = [], $options = []): SelectInterface
     {
         $class = static::class;
-
         $query = (new TightModelSelector(new $class()))->select($filters, $options);
         return $query;
     }

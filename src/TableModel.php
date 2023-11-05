@@ -19,12 +19,29 @@ abstract class TableModel extends Crudites
 
     public function getId($mode = null)
     {
+        trigger_error('getId() is deprecated and should not be used anymore. Please use the id() or pk() instead.', E_USER_DEPRECATED);
+    
         $primary_key = static::table()->autoIncrementedPrimaryKey();
         if (is_null($primary_key) && count($pks = static::table()->primaryKeys()) == 1) {
             $primary_key = current($pks);
         }
 
         return $mode === 'name' ? $primary_key->name() : $this->get($primary_key->name());
+    }
+
+    public function pk()
+    {
+        $primary_key = static::table()->autoIncrementedPrimaryKey();
+        if (is_null($primary_key) && count($pks = static::table()->primaryKeys()) == 1) {
+            $primary_key = current($pks);
+        }
+
+        return $this->get($primary_key->name());
+    }
+
+    public function id()
+    {
+        return $this->get('id');
     }
 
     public function get($prop_name)
@@ -58,27 +75,32 @@ abstract class TableModel extends Crudites
     public static function table(): TableInterface
     {
         $table = static::relationalMappingName();
-        $table = self::inspect($table);
-
-        return $table;
+        return self::$database->inspect($table);
     }
 
+    /**
+     * The relationalMappingName() function returns a string that represents 
+     * the name of the table in the database that corresponds to the current model
+     * 
+     * The function returns one of the following:
+     *  - The value of the TABLE_NAME constant, if it is defined in the model class
+     *  - The value of a constant named TABLE_<ClassName>, if it is defined()
+     *  - The lowercase name of the model class if neither constants are defined
+     */
     public static function relationalMappingName(): string
     {
-        $reflect = new \ReflectionClass(get_called_class());
+        $called_class = new \ReflectionClass(get_called_class());
 
-        $table_name = $reflect->getConstant('TABLE_NAME');
+        $table_name = $called_class->getConstant('TABLE_NAME');
+        if($table_name !== false)
+            return $table_name;
 
-        if ($table_name === false) {
-            $calling_class = $reflect->getShortName();
-            if (defined($const_name = 'TABLE_' . strtoupper($calling_class))) {
-                $table_name = constant($const_name);
-            } else {
-                $table_name = strtolower($calling_class);
-            }
-        }
-
-        return $table_name;
+        $class_name = $called_class->getShortName();
+        
+        if (defined($const_name = 'TABLE_' . strtoupper($class_name)))
+            return constant($const_name);
+        
+        return strtolower($class_name);
     }
 
 
@@ -138,52 +160,94 @@ abstract class TableModel extends Crudites
         return $ret;
     }
 
-    /* USAGE
-    * one($primary_key_value)
-    * one($unique_column, $value)
-    */
-    public static function one($arg1, $arg2 = null)
-    {
-        $datass = [];
 
-        if (!is_null($arg2)) {
-            $datass = [$arg1 => $arg2];
-        } elseif (!is_array($arg1) && count(get_called_class()::table()->primaryKeys()) === 1) {
-            $datass = [current(get_called_class()::table()->primaryKeys())->name() => $arg1];
-        } elseif (is_array($arg1)) {
-            $datass = $arg1;
-        } else {
-            throw new CruditesException('ARGUMENTS_ARE_NOT_ACTIONNABLE');
+    private static function actionnableParams($arg1, $arg2 = null): array
+    {
+        $unique_identifiers = null;
+        
+        $table = get_called_class()::table();
+
+        // case 3
+        if(is_array($arg1) && !empty($arg1))
+        {
+            $unique_identifiers = $arg1;
         }
 
-        $unique_identifiers = get_called_class()::table()->matchUniqueness($datass);
+        // case 2
+        else if (is_string($arg1) && is_scalar($arg2))
+        {   
+            $unique_identifiers = [$arg1 => $arg2];
+        }
 
+        // case 1
+        else if (is_scalar($arg1) && count($table->primaryKeys()) === 1)
+        {   
+            $pk = current($table->primaryKeys())->name();
+            $unique_identifiers = [$pk => $arg1];
+        } 
+        else
+            throw new CruditesException('ARGUMENTS_ARE_NOT_ACTIONNABLE');
+
+
+        // Find the unique identifier(s) in the database.
+        $unique_identifiers = $table->matchUniqueness($unique_identifiers);
         if (empty($unique_identifiers)) {
             throw new CruditesException('UNIQUE_IDENTIFIER_NOT_FOUND');
         }
 
-        $select = static::query_retrieve([], ['eager' => true])->whereFieldsEQ($unique_identifiers);
-        $res = static::retrieve($select);
+        return $unique_identifiers;
+    }
 
-        switch (count($res)) {
+
+    /**
+     * Retrieve a single instance of the model by its unique identifier(s).
+     * Throws CruditesException if the unique identifier yields no or multiple instances.
+     *
+     * @param mixed $arg1 The value of the primary key or an array of column-value pairs.
+     * @param mixed|null $arg2 The value of the primary key if $arg1 is a string, otherwise null.
+     * 
+     * @return mixed The retrieved instance of the model.
+     * 
+     * @throws CruditesException If the arguments are not actionable, the unique identifier is not found, or multiple instances are found.
+     * 
+     * USAGE
+     *  Case 1:  Class::one($primary_key_value)
+     *  Case 2:  Class::one($unique_column, $value)
+     *  Case 3:  Class::one([$unique_column => $value, $unique_column2 => $value2])
+     * 
+     */
+    public static function one($arg1, $arg2 = null): self
+    {
+        $unique_identifiers = static::actionnableParams($arg1, $arg2);
+
+        $records = static::any($unique_identifiers);
+        
+        switch (count($records)) {
             case 0:
-                throw new CruditesException('INSTANCE_NOT_FOUND');
+                throw new CruditesException('NO_INSTANCE_MATCH_UNIQUE_IDENTIFIERS');
+
             case 1:
-                return current($res);
+                return current($records);
+
             default:
-                throw new CruditesException('SINGULAR_INSTANCE_ERROR');
+                throw new CruditesException('MULTIPLE_INSTANCES_MATCH_UNIQUE_IDENTIFIERS');
         }
     }
 
-    public static function exists($arg1, $arg2 = null)
+    /**
+     * Attempts to retrieve a single instance of the model by its unique identifier(s).
+     * If no instance is found, returns null.
+     */
+
+    public static function exists($arg1, $arg2 = null): ?self
     {
         try {
             return self::one($arg1, $arg2);
-        } catch (CruditesException $e) {
+        } 
+        catch (CruditesException $e) {
             return null;
         }
     }
-
 
     public static function any($field_exact_values, $options = [])
     {
@@ -193,7 +257,17 @@ abstract class TableModel extends Crudites
 
     public static function filter($filters = [], $options = []): array
     {
-        return static::retrieve(static::query_retrieve($filters, $options));
+        $query = static::query_retrieve($filters, $options);
+        return static::retrieve($query);
+    }
+
+    public static function count($filters = [], $options = []): int
+    {
+        $query = static::query_retrieve($filters, ['eager' => false]);
+        $query->columns(['COUNT(*) as counter']);
+        $res = static::retrieve($query);
+        $res = array_pop($res);
+        return (int)$res->counter;
     }
 
     public static function listing($filters = [], $options = []): array

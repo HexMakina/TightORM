@@ -63,16 +63,16 @@ abstract class TightModel extends TableModel implements ModelInterface
     public function save($operator_id)
     {
         try {
-
             // errors detection befire saving
             $errors = [];
-            if(empty($errors = $this->traitor('before_save'))){
-              if(empty($errors = $this->before_save()){
-                $errors = $this->validate();
-              }
+            if (empty($errors = $this->traitor('before_save'))) {
+                if (empty($errors = $this->before_save()){
+                    $errors = $this->validate();
+                }
             }
-            if (!empty($errors))
-              return $errors;
+            if (!empty($errors)) {
+                return $errors;
+            }
 
 
             // a tight model *always* match a single table row
@@ -98,7 +98,6 @@ abstract class TightModel extends TableModel implements ModelInterface
 
             $this->traitor('after_save');
             $this->after_save();
-
         } catch (\Exception $e) {
             return [$e->getMessage()];
         }

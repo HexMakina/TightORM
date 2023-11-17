@@ -4,7 +4,7 @@ namespace HexMakina\TightORM;
 
 use HexMakina\Crudites\Crudites;
 use HexMakina\Crudites\CruditesException;
-use HexMakina\BlackBox\Database\TableManipulationInterface;
+use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
 
 abstract class TableModel extends Crudites
@@ -55,7 +55,7 @@ abstract class TableModel extends Crudites
         return $this;
     }
 
-    public static function table(): TableManipulationInterface
+    public static function table(): TableInterface
     {
         $table = static::relationalMappingName();
 
@@ -103,9 +103,6 @@ abstract class TableModel extends Crudites
     }
 
     // success: return PK-indexed array of results (associative array or object)
-    /**
-     * @return mixed[]
-     */
     public static function retrieve(SelectInterface $select): array
     {
         $ret = [];
@@ -118,7 +115,7 @@ abstract class TableModel extends Crudites
 
         try {
             $select->run();
-        } catch (CruditesException $cruditesException) {
+        } catch (CruditesException $e) {
             return [];
         }
 
@@ -137,16 +134,28 @@ abstract class TableModel extends Crudites
     */
     public static function one($arg1, $arg2 = null)
     {
-        $mixed_info = is_null($arg2) ? $arg1 : [$arg1 => $arg2];
+        $datass = [];
 
-        $unique_identifiers = get_called_class()::table()->matchUniqueness($mixed_info);
+        if (!is_null($arg2)) {
+            $datass = [$arg1 => $arg2];
+        } elseif (!is_array($arg1) && count(get_called_class()::table()->primaryKeys()) === 1) {
+            $datass = [current(get_called_class()::table()->primaryKeys())->name() => $arg1];
+        } elseif (is_array($arg1)) {
+            $datass = $arg1;
+        } else {
+            throw new CruditesException('ARGUMENTS_ARE_NOT_ACTIONNABLE');
+        }
+
+        $unique_identifiers = get_called_class()::table()->matchUniqueness($datass);
 
         if (empty($unique_identifiers)) {
             throw new CruditesException('UNIQUE_IDENTIFIER_NOT_FOUND');
         }
 
-        $Query = static::query_retrieve([], ['eager' => true])->whereFieldsEQ($unique_identifiers);
-        switch (count($res = static::retrieve($Query))) {
+        $select = static::query_retrieve([], ['eager' => true])->whereFieldsEQ($unique_identifiers);
+        $res = static::retrieve($select);
+
+        switch (count($res)) {
             case 0:
                 throw new CruditesException('INSTANCE_NOT_FOUND');
             case 1:
@@ -171,8 +180,8 @@ abstract class TableModel extends Crudites
      */
     public static function any($field_exact_values, $options = []): array
     {
-        $Query = static::query_retrieve([], $options)->whereFieldsEQ($field_exact_values);
-        return static::retrieve($Query);
+        $select = static::query_retrieve([], $options)->whereFieldsEQ($field_exact_values);
+        return static::retrieve($select);
     }
 
     /**

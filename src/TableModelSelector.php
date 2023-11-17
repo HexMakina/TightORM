@@ -6,7 +6,6 @@ use HexMakina\BlackBox\ORM\ModelInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
 use HexMakina\Crudites\Queries\AutoJoin;
 
-
 class TableModelSelector
 {
     private \HexMakina\BlackBox\ORM\ModelInterface $model;

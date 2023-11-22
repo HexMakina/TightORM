@@ -81,12 +81,7 @@ abstract class TightModel extends TableModel implements ModelInterface
 
             if ($table_row->isAltered()) { // someting to save ?
                 if (!empty($persistence_errors = $table_row->persist())) { // validate and persist
-                    $errors = [];
-                    foreach ($persistence_errors as $column_name => $err) {
-                        $errors[sprintf('MODEL_%s_FIELD_%s', static::model_type(), $column_name)] = 'CRUDITES_' . $err;
-                    }
-
-                    return $errors;
+                    return $persistence_errors;
                 }
 
                 // reload row

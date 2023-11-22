@@ -59,7 +59,7 @@ abstract class TableModel extends Crudites
     {
         $table = static::relationalMappingName();
 
-        return self::inspect($table);
+        return self::$database->inspect($table);
     }
 
     public static function relationalMappingName(): string

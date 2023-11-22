@@ -2,12 +2,14 @@
 
 namespace HexMakina\TightORM;
 
+use HexMakina\BlackBox\Database\DatabaseInterface;
 use HexMakina\Crudites\CruditesException;
 use HexMakina\BlackBox\ORM\ModelInterface;
 
 trait RelationManyToMany
 {
     abstract public static function model_type(): string;
+    abstract public static function database(): DatabaseInterface;
 
     //------------------------------------------------------------  Data Relation
     // returns true on success, error message on failure
@@ -26,7 +28,7 @@ trait RelationManyToMany
     {
         $join_info = static::otm();
 
-        $j_table = static::inspect($join_info['t']);
+        $j_table = static::database()->inspect($join_info['t']);
         $j_table_key = $join_info['k'];
 
         if (empty($j_table) || empty($j_table_key)) {

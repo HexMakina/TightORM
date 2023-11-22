@@ -9,15 +9,18 @@ use HexMakina\Crudites\Queries\AutoJoin;
 class TightModelSelector
 {
 
-    private $model;
-    private $model_class;
-    private $model_table;
-    private $statement;
+    private \HexMakina\BlackBox\ORM\ModelInterface $model;
 
-    public function __construct(ModelInterface $m)
+    private string $model_class;
+
+    private $model_table;
+
+    private \HexMakina\BlackBox\Database\SelectInterface $statement;
+
+    public function __construct(ModelInterface $model)
     {
-        $this->model = $m;
-        $this->model_class = get_class($m);
+        $this->model = $model;
+        $this->model_class = get_class($model);
         $this->model_table = $this->model_class::table();
         $this->statement = $this->model_table->select();
     }
@@ -65,14 +68,14 @@ class TightModelSelector
             $this->statement()->whereFilterContent($filters['content']);
         }
 
-        if (isset($filters['ids'])) {
-            $this->filter_with_ids($filters['ids']);
+        if (isset($filters['ids']) && is_array($filters['ids'])) {
+            $this->filter_with_ids(array_filter($filters['ids'], function($value) { return !is_null($value); }));
         }
 
         return $this->statement();
     }
 
-    public function option_order_by($order_bys)
+    public function option_order_by($order_bys): void
     {
         if (is_string($order_bys)) {
             $this->statement()->orderBy($order_bys);
@@ -88,7 +91,7 @@ class TightModelSelector
         }
     }
 
-    public function filter_event($date_start = null, $date_stop = null)
+    public function filter_event($date_start = null, $date_stop = null): void
     {
         if (!empty($date_start)) {
             $this->statement()->whereGTE($this->model()->event_field(), $date_start, $this->statement()->tableLabel(), ':filter_date_start');
@@ -97,12 +100,13 @@ class TightModelSelector
         if (!empty($date_stop)) {
             $this->statement()->whereLTE($this->model()->event_field(), $date_stop, $this->statement()->tableLabel(), ':filter_date_stop');
         }
+
       //
       // if(empty($options['order_by']))
       //   $this->statement()->orderBy([$this->model()->event_field(), 'DESC']);
     }
 
-    public function filter_with_ids($ids)
+    public function filter_with_ids($ids): void
     {
         if (empty($ids)) {
             $this->statement()->where('1=0'); // TODO: this is a new low.. find another way to cancel query
@@ -111,12 +115,16 @@ class TightModelSelector
         }
     }
 
-    public function filter_with_fields($filters, $filter_mode = 'whereEQ')
+    public function filter_with_fields($filters, $filter_mode = 'whereEQ'): void
     {
         foreach ($this->model_table->columns() as $column_name => $column) {
-            if (isset($filters[$column_name]) && is_string($filters[$column_name])) {
-                $this->statement()->$filter_mode($column_name, $filters[$column_name], $this->model_table->name());
+            if (!isset($filters[$column_name])) {
+                continue;
             }
+            if (!is_string($filters[$column_name])) {
+                continue;
+            }
+            $this->statement()->$filter_mode($column_name, $filters[$column_name], $this->model_table->name());
         }
     }
 }

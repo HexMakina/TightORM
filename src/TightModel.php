@@ -137,7 +137,6 @@ abstract class TightModel extends TableModel implements ModelInterface
     public static function query_retrieve($filters = [], $options = []): SelectInterface
     {
         $class = static::class;
-
         $query = (new TightModelSelector(new $class()))->select($filters, $options);
         return $query;
     }

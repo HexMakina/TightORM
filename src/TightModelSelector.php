@@ -8,15 +8,18 @@ use HexMakina\BlackBox\Database\SelectInterface;
 class TightModelSelector
 {
 
-    private $model;
-    private $model_class;
-    private $model_table;
-    private $statement;
+    private \HexMakina\BlackBox\ORM\ModelInterface $model;
 
-    public function __construct(ModelInterface $m)
+    private string $model_class;
+
+    private $model_table;
+
+    private \HexMakina\BlackBox\Database\SelectInterface $statement;
+
+    public function __construct(ModelInterface $model)
     {
-        $this->model = $m;
-        $this->model_class = get_class($m);
+        $this->model = $model;
+        $this->model_class = get_class($model);
         $this->model_table = $this->model_class::table();
         $this->statement = $this->model_table->select();
     }
@@ -72,7 +75,7 @@ class TightModelSelector
         return $this->statement();
     }
 
-    public function filter_event($date_start = null, $date_stop = null)
+    public function filter_event($date_start = null, $date_stop = null): void
     {
         if (!empty($date_start)) {
             $this->statement()->whereGTE($this->model()->event_field(), $date_start, $this->statement()->tableLabel(), ':filter_date_start');
@@ -85,7 +88,7 @@ class TightModelSelector
       //   $this->statement()->orderBy([$this->model()->event_field(), 'DESC']);
     }
 
-    public function filter_with_ids($ids)
+    public function filter_with_ids($ids): void
     {
         if (empty($ids)) {
             $this->statement()->where('1=0'); // TODO: this is a new low.. find another way to cancel query
@@ -94,7 +97,7 @@ class TightModelSelector
         }
     }
 
-    public function filter_with_fields($filters, $filter_mode = 'whereEQ')
+    public function filter_with_fields($filters, $filter_mode = 'whereEQ'): void
     {
         foreach ($this->model_table->columns() as $column_name => $column) {
             if (isset($filters[$column_name]) && is_scalar($filters[$column_name])) {

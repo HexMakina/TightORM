@@ -49,19 +49,19 @@ abstract class TableModel extends Crudites
 
     public function get($prop_name)
     {
-        if (property_exists($this, $prop_name) === true) {
+        if (property_exists($this, $prop_name)) {
             return $this->$prop_name;
         }
 
         return null;
     }
 
-    public function set($prop_name, $value)
+    public function set($prop_name, $value): void
     {
         $this->$prop_name = $value;
     }
 
-    public function import($assoc_data)
+    public function import($assoc_data): self
     {
         if (!is_array($assoc_data)) {
             throw new \Exception(__FUNCTION__ . '(assoc_data) parm is not an array');
@@ -92,8 +92,17 @@ abstract class TableModel extends Crudites
      */
     public static function relationalMappingName(): string
     {
+        $reflectionClass = new \ReflectionClass(get_called_class());
         $called_class = new \ReflectionClass(get_called_class());
 
+        $table_name = $reflectionClass->getConstant('TABLE_NAME');
+
+        if ($table_name === false) {
+            $shortName = $reflectionClass->getShortName();
+            $table_name = defined($const_name = 'TABLE_' . strtoupper($shortName)) ? constant($const_name) : strtolower($shortName);
+        }
+
+        return $table_name;
         $table_name = $called_class->getConstant('TABLE_NAME');
         if($table_name !== false)
             return $table_name;
@@ -116,11 +125,7 @@ abstract class TableModel extends Crudites
         $model_data = get_object_vars($this);
 
         // 1. Produce OR restore a row
-        if ($this->isNew()) {
-            $table_row = static::table()->produce($model_data);
-        } else {
-            $table_row = static::table()->restore($model_data);
-        }
+        $table_row = $this->isNew() ? static::table()->produce($model_data) : static::table()->restore($model_data);
 
         // 2. Apply alterations from form_model data
         $table_row->alter($model_data);
@@ -277,12 +282,14 @@ abstract class TableModel extends Crudites
 
 
 
-    public static function get_many_by_AIPK($aipk_values)
+    public static function get_many_by_AIPK($aipk_values): ?array
     {
-        if (!empty($aipk_values) && !is_null($AIPK = static::table()->autoIncrementedPrimaryKey())) {
-            return static::retrieve(static::table()->select()->whereNumericIn($AIPK, $aipk_values));
+        if (empty($aipk_values)) {
+            return null;
         }
-
-        return null;
+        if (is_null($AIPK = static::table()->autoIncrementedPrimaryKey())) {
+            return null;
+        }
+        return static::retrieve(static::table()->select()->whereNumericIn($AIPK, $aipk_values));
     }
 }

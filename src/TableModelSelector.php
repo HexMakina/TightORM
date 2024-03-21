@@ -4,83 +4,77 @@ namespace HexMakina\TightORM;
 
 use HexMakina\BlackBox\ORM\ModelInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
-use HexMakina\Crudites\Queries\AutoJoin;
 
 class TableModelSelector
 {
-    private $model;
+    private $class;
+    private $table;
+    private $query;
 
-    public function __construct(ModelInterface $m)
+    public function __construct(string $class)
     {
-        $this->model = $m;
+        if(class_exists($class) === false)
+            throw new \Exception('CLASS_NOT_FOUND');
+        
+        $this->class = $class;
+        $this->table = $this->class::table();
     }
 
     public function select($filters = [], $options = []): SelectInterface
     {
-        $class = get_class($this->model);
-        $table = $class::table();
-
-        $Query = $table->select(null, $class::tableAlias());
-
-
-        if (!isset($options['eager']) || $options['eager'] !== false) {
-            AutoJoin::eager($Query);
-        }
-
-
-        foreach ($table->columns() as $column_name => $column) {
-            if (isset($filters[$column_name]) && is_string($filters[$column_name])) {
-                $Query->whereEQ($column_name, $filters[$column_name]);
+        $this->query = $this->table->select(null, $options['table_alias'] ?? $this->class::tableAlias());
+    
+        // if the array of filters contains an index macthing a column name, it is used as a EQ filter
+        // it is used as a where equal clause
+        foreach (array_keys($this->table->columns()) as $column_name) {
+            if (isset($filters[$column_name]) && is_scalar($filters[$column_name])) {
+                
+                $this->query->whereEQ($column_name, $filters[$column_name]);
+                
+                unset($filters[$column_name]);
             }
         }
+        
+        // now that the possibility of index matching columns is removed, 
+        // the rest of the array is used as a filter shortcuts
 
-        if (is_subclass_of($event = new $class(), '\HexMakina\kadro\Models\Interfaces\EventInterface')) {
-            if (!empty($filters['date_start'])) {
-                $Query->whereGTE($event->event_field(), $filters['date_start'], $Query->tableLabel(), ':filter_date_start');
-            }
-
-            if (!empty($filters['date_stop'])) {
-                $Query->whereLTE($event->event_field(), $filters['date_stop'], $Query->tableLabel(), ':filter_date_stop');
-            }
-
-            if (empty($options['order_by'])) {
-                $Query->orderBy([$event->event_field(), 'DESC']);
-            }
-        }
-
-        if (isset($filters['content'])) {
-            $Query->whereFilterContent($filters['content']);
-        }
-
+        // shortcut 'ids' => [1,2,3] is used as a where in clause
         if (isset($filters['ids'])) {
-            if (empty($filters['ids'])) {
-                $Query->where('1=0'); // TODO: this is a new low.. find another way to cancel query
-            } else {
-                $Query->whereNumericIn('id', $filters['ids'], $Query->tableLabel());
-            }
+            $this->filterByIds($filters['ids']);
         }
 
-        if (isset($options['order_by'])) { // TODO commenting required about the array situation
-            $order_by = $options['order_by'];
-
-            if (is_string($order_by)) {
-                $Query->orderBy($order_by);
-            } elseif (is_array($order_by)) {
-                foreach ($options['order_by'] as $order_by) {
-                    if (!isset($order_by[2])) {
-                        array_unshift($order_by, '');
-                    }
-
-                    list($order_table, $order_field, $order_direction) = $order_by;
-                    $Query->orderBy([$order_table ?? '', $order_field, $order_direction]);
-                }
-            }
+        // shortcut 'content'
+        if (isset($filters['content'])) {
+            $this->query->whereFilterContent($filters['content']);
         }
 
-        if (isset($options['limit']) && is_array($options['limit'])) {
-            $Query->limit($options['limit'][1], $options['limit'][0]);
+
+        // processing options 
+        if (isset($options['order_by'])) {
+            $this->query->orderBy($options['order_by']);
         }
 
-        return $Query;
+        if (isset($options['limit'])) {
+            // if limit is an array, it is used as [$limit, $offset]
+            // else, it is used as [$limit, 0]
+            [$limit, $offset] = is_array($options['limit']) ? $options['limit'] : [$options['limit'], 0];
+
+            $this->query->limit($limit, $offset);
+        }
+
+
+        return $this->query;
+    }
+
+    private function filterByIds(array $ids)
+    {
+        
+        if (empty($ids)) {
+            // as a security, if array is empty, 
+            // the query is cancelled by setting the limit to 0
+            $this->query->limit(0); 
+        } else {
+            $this->query->whereNumericIn('id', $ids, $this->query->tableLabel());
+        }
     }
 }

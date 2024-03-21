@@ -20,6 +20,11 @@ abstract class TightModel extends TableModel implements ModelInterface
         return static::class_short_name();
     }
 
+    public function urn(): string
+    {
+        return $this->nid() . ':' . $this->id();
+    }
+    
     public function immortal(): bool
     {
         return self::IMMORTAL_BY_DEFAULT;
@@ -139,7 +144,7 @@ abstract class TightModel extends TableModel implements ModelInterface
     }
 
     //------------------------------------------------------------  Data Retrieval
-    public static function query_retrieve($filters = [], $options = []): SelectInterface
+    public static function filter($filters = [], $options = []): SelectInterface
     {
         $class = static::class;
         $query = (new TightModelSelector(new $class()))->select($filters, $options);

@@ -10,6 +10,9 @@ use HexMakina\BlackBox\Database\SelectInterface;
 abstract class TableModel extends Crudites
 {
 
+    protected static TableInterface $table;
+
+
     //check all primary keys are set (FIXME that doesn't work unles AIPK.. nice try)
     public function isNew(): bool
     {
@@ -72,15 +75,15 @@ abstract class TableModel extends Crudites
         return $this;
     }
 
+
     public static function table(): TableInterface
     {
-        $table = static::relationalMappingName();
-        return self::$database->inspect($table);
+        return static::$database->table(static::relationalMappingName());
     }
 
     /**
-     * The relationalMappingName() function returns a string that represents 
-     * the name of the table in the database that corresponds to the current model
+     * The relationalMappingName() function returns a string, the the name of 
+     * the table in the database that corresponds to the current model
      * 
      * The function returns one of the following:
      *  - The value of the TABLE_NAME constant, if it is defined in the model class
@@ -123,15 +126,6 @@ abstract class TableModel extends Crudites
         $table_row->alter($model_data);
 
         return $table_row;
-    }
-
-    //------------------------------------------------------------  Data Retrieval
-    // DEPRECATED, only exist for unit testing vis-a-vis TightModelSelector
-    public static function query_retrieve($filters = [], $options = []): SelectInterface
-    {
-        $class = get_called_class();
-        $query = (new TableModelSelector(new $class()))->select($filters, $options);
-        return $query;
     }
 
     // success: return PK-indexed array of results (associative array or object)
@@ -219,9 +213,11 @@ abstract class TableModel extends Crudites
     public static function one($arg1, $arg2 = null): self
     {
         $unique_identifiers = static::actionnableParams($arg1, $arg2);
+        // vd($arg1, 'arg1');
+        // vd($arg2, 'arg2');
+        // vd($unique_identifiers, static::class);
 
         $records = static::any($unique_identifiers);
-        
         switch (count($records)) {
             case 0:
                 throw new CruditesException('NO_INSTANCE_MATCH_UNIQUE_IDENTIFIERS');
@@ -249,21 +245,25 @@ abstract class TableModel extends Crudites
         }
     }
 
-    public static function any($field_exact_values, $options = [])
+    public static function any($field_exact_values=[], $options = [])
     {
-        $select = static::query_retrieve([], $options)->whereFieldsEQ($field_exact_values);
+        $select = static::filter($field_exact_values, $options);
         return static::retrieve($select);
     }
 
-    public static function filter($filters = [], $options = []): array
+    
+    public static function filter($filters = [], $options = []): SelectInterface
     {
-        $query = static::query_retrieve($filters, $options);
-        return static::retrieve($query);
+        $query = (new TableModelSelector(get_called_class()))->select($filters, $options);
+        return $query;
+
+        // $query = static::query_retrieve($filters, $options);
+        // return static::retrieve($query);
     }
 
     public static function count($filters = [], $options = []): int
     {
-        $query = static::query_retrieve($filters, ['eager' => false]);
+        $query = static::filter($filters, ['eager' => false]);
         $query->columns(['COUNT(*) as counter']);
         $res = static::retrieve($query);
         $res = array_pop($res);
@@ -272,7 +272,7 @@ abstract class TableModel extends Crudites
 
     public static function listing($filters = [], $options = []): array
     {
-        return static::retrieve(static::query_retrieve($filters, $options)); // listing as arrays for templates
+        return static::retrieve(static::filter($filters, $options)); // listing as arrays for templates
     }
 
 

@@ -4,7 +4,6 @@ namespace HexMakina\TightORM;
 
 use HexMakina\BlackBox\ORM\ModelInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
-use HexMakina\Crudites\Queries\AutoJoin;
 
 class TightModelSelector
 {
@@ -42,21 +41,23 @@ class TightModelSelector
 
     public function select($filters = [], $options = []): SelectInterface
     {
-        $this->statement = $this->model_table->select(null, $options['table_alias'] ?? get_class($this->model)::tableAlias());
-        // $this->statement()->tableAlias($options['table_alias'] ?? get_class($this->model)::tableAlias());
+        $table_alias = $options['table_alias'] ?? get_class($this->model)::tableAlias();
 
-        if (!isset($options['eager']) || $options['eager'] !== false) {
-            AutoJoin::eager($this->statement());
-        }
+        $this->statement = $this->model_table->select(null, $table_alias);
 
+            
         if (isset($options['order_by'])) {
-            $this->option_order_by($options['order_by']);
+            $this->statement()->orderBy($options['order_by']);
         }
-
-        if (isset($options['limit']) && is_array($options['limit'])) { // TODO this doesn't need an array. limit function works it out itself
-            $this->statement()->limit($options['limit'][1], $options['limit'][0]);
+        
+        if (isset($options['limit'])) {
+            if(is_array($options['limit'])){
+                $this->statement()->limit($options['limit'][0], $options['limit'][1]);
+            }
+            elseif(is_numeric($options['limit'])){
+                $this->statement()->limit($options['limit']);
+            }
         }
-
         $this->filter_with_fields($filters);
 
         if (is_subclass_of($this->model(), '\HexMakina\kadro\Models\Interfaces\EventInterface')) {
@@ -71,24 +72,7 @@ class TightModelSelector
         if (isset($filters['ids']) && is_array($filters['ids'])) {
             $this->filter_with_ids(array_filter($filters['ids'], function($value) { return !is_null($value); }));
         }
-
         return $this->statement();
-    }
-
-    public function option_order_by($order_bys): void
-    {
-        if (is_string($order_bys)) {
-            $this->statement()->orderBy($order_bys);
-        } elseif (is_array($order_bys)) { // TODO commenting required about the array situation
-            foreach ($order_bys as $order_by) {
-                if (!isset($order_by[2])) {
-                    array_unshift($order_by, '');
-                }
-
-                list($order_table, $order_field, $order_direction) = $order_by;
-                $this->statement()->orderBy([$order_table ?? '', $order_field, $order_direction]);
-            }
-        }
     }
 
     public function filter_event($date_start = null, $date_stop = null): void
@@ -100,8 +84,6 @@ class TightModelSelector
         if (!empty($date_stop)) {
             $this->statement()->whereLTE($this->model()->event_field(), $date_stop, $this->statement()->tableLabel(), ':filter_date_stop');
         }
-
-      //
       // if(empty($options['order_by']))
       //   $this->statement()->orderBy([$this->model()->event_field(), 'DESC']);
     }
@@ -118,13 +100,9 @@ class TightModelSelector
     public function filter_with_fields($filters, $filter_mode = 'whereEQ'): void
     {
         foreach ($this->model_table->columns() as $column_name => $column) {
-            if (!isset($filters[$column_name])) {
-                continue;
+            if (isset($filters[$column_name]) && is_scalar($filters[$column_name])) {
+                $this->statement()->$filter_mode($column_name, $filters[$column_name], $this->statement()->tableLabel());
             }
-            if (!is_string($filters[$column_name])) {
-                continue;
-            }
-            $this->statement()->$filter_mode($column_name, $filters[$column_name], $this->model_table->name());
         }
     }
 }

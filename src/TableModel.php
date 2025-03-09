@@ -2,17 +2,19 @@
 
 namespace HexMakina\TightORM;
 
+use HexMakina\BlackBox\Database\SchemaInterface;
 use HexMakina\Crudites\Crudites;
 use HexMakina\Crudites\CruditesException;
-use HexMakina\BlackBox\Database\TableInterface;
+use HexMakina\Crudites\Row;
 use HexMakina\BlackBox\Database\SelectInterface;
 
 abstract class TableModel extends Crudites
 {
 
-    protected static TableInterface $table;
+    private SchemaInterface $schema;
+    private string $table;
 
-
+    
     //check all primary keys are set (FIXME that doesn't work unles AIPK.. nice try)
     public function isNew(): bool
     {
@@ -22,9 +24,7 @@ abstract class TableModel extends Crudites
 
     public function getId($mode = null)
     {
-        trigger_error('getId() is deprecated and should not be used anymore. Please use the id() or pk() instead.', E_USER_DEPRECATED);
-
-        $primary_key = static::table()->autoIncrementedPrimaryKey();
+        $primary_key = $this->schema->autoIncrementedPrimaryKey(static::table());
         if (is_null($primary_key) && count($pks = static::table()->primaryKeys()) == 1) {
             $primary_key = current($pks);
         }
@@ -77,21 +77,9 @@ abstract class TableModel extends Crudites
     }
 
 
-    public static function table(): TableInterface
-    {
-        return static::$database->table(static::relationalMappingName());
-    }
 
-    /**
-     * The relationalMappingName() function returns a string, the the name of 
-     * the table in the database that corresponds to the current model
-     * 
-     * The function returns one of the following:
-     *  - The value of the TABLE_NAME constant, if it is defined in the model class
-     *  - The value of a constant named TABLE_<ClassName>, if it is defined()
-     *  - The lowercase name of the model class if neither constants are defined
-     */
-    public static function relationalMappingName(): string
+    // relational mapping
+    public static function table(): string
     {
         $called_class = new \ReflectionClass(get_called_class());
         $class_name = $called_class->getShortName();
@@ -107,7 +95,6 @@ abstract class TableModel extends Crudites
         return strtolower($class_name);
     }
 
-
     public function to_table_row($operator_id = null)
     {
         if (!is_null($operator_id) && $this->isNew() && is_null($this->get('created_by'))) {
@@ -116,6 +103,14 @@ abstract class TableModel extends Crudites
 
         $model_data = get_object_vars($this);
 
+        if($this->isNew()){
+            // $table_row = new Row($this, $model_data);
+            $table_row = new Row($this->schema, static::table(), $model_data);
+        }
+        else{
+            $table_row = new Row($this->schema);
+            $table_row->load($model_data);
+        }
         // 1. Produce OR restore a row
         $table_row = $this->isNew() ? static::table()->produce($model_data) : static::table()->restore($model_data);
         // 2. Apply alterations from form_model data

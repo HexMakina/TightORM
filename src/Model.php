@@ -3,7 +3,7 @@
 namespace HexMakina\TightORM;
 
 use HexMakina\Crudites\Crudites;
-use HexMakina\Crudites\Table\Row;
+use HexMakina\Crudites\Row;
 use HexMakina\Crudites\CruditesException;
 use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\SelectInterface;

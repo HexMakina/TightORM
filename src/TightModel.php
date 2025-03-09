@@ -1,5 +1,4 @@
 <?php
-
 namespace HexMakina\TightORM;
 
 use HexMakina\BlackBox\Database\SelectInterface;
@@ -9,12 +8,22 @@ use HexMakina\Traitor\Traitor;
 abstract class TightModel extends TableModel implements ModelInterface
 {
     use Traitor;
-
+    
     public function __toString()
     {
-        return static::class_short_name() . ' #' . $this->getId();
+        return static::class_short_name() . ' #' . $this->id();
     }
 
+    public function nid(): string
+    {
+        return static::class_short_name();
+    }
+
+    public function urn(): string
+    {
+        return $this->nid() . ':' . $this->id();
+    }
+    
     public function immortal(): bool
     {
         return self::IMMORTAL_BY_DEFAULT;
@@ -74,28 +83,19 @@ abstract class TightModel extends TableModel implements ModelInterface
                 return $errors;
             }
 
-
+            
             // a tight model *always* match a single table row
             $table_row = $this->to_table_row($operator_id);
-
-
+            
             if ($table_row->isAltered()) { // someting to save ?
-                if (!empty($persistence_errors = $table_row->persist())) { // validate and persist
-                    $errors = [];
-                    foreach ($persistence_errors as $column_name => $err) {
-                        if(is_numeric($column_name))
-                            $errors[]=$err;
-                        else
-                            $errors[sprintf('MODEL_%s_FIELD_%s', static::model_type(), $column_name)] = $err;
-                    }
+                
+                $errors = $table_row->persist();
 
+                if (!empty($errors)) {
                     return $errors;
                 }
-
-                // reload row
+                
                 $refreshed_row = static::table()->restore($table_row->export());
-
-                // update model
                 $this->import($refreshed_row->export());
             }
 
@@ -142,7 +142,7 @@ abstract class TightModel extends TableModel implements ModelInterface
     }
 
     //------------------------------------------------------------  Data Retrieval
-    public static function query_retrieve($filters = [], $options = []): SelectInterface
+    public static function filter($filters = [], $options = []): SelectInterface
     {
         $class = static::class;
         $query = (new TightModelSelector(new $class()))->select($filters, $options);
@@ -174,6 +174,7 @@ abstract class TightModel extends TableModel implements ModelInterface
         return strtolower(self::class_short_name());
     }
 
+    
     public static function class_short_name(): string
     {
         return (new \ReflectionClass(get_called_class()))->getShortName();

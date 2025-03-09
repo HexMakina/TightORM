@@ -23,7 +23,7 @@ abstract class TableModel extends Crudites
     public function getId($mode = null)
     {
         trigger_error('getId() is deprecated and should not be used anymore. Please use the id() or pk() instead.', E_USER_DEPRECATED);
-    
+
         $primary_key = static::table()->autoIncrementedPrimaryKey();
         if (is_null($primary_key) && count($pks = static::table()->primaryKeys()) == 1) {
             $primary_key = current($pks);
@@ -58,6 +58,7 @@ abstract class TableModel extends Crudites
 
     public function set($prop_name, $value): void
     {
+
         $this->$prop_name = $value;
     }
 
@@ -92,26 +93,17 @@ abstract class TableModel extends Crudites
      */
     public static function relationalMappingName(): string
     {
-        $reflectionClass = new \ReflectionClass(get_called_class());
         $called_class = new \ReflectionClass(get_called_class());
+        $class_name = $called_class->getShortName();
 
-        $table_name = $reflectionClass->getConstant('TABLE_NAME');
-
-        if ($table_name === false) {
-            $shortName = $reflectionClass->getShortName();
-            $table_name = defined($const_name = 'TABLE_' . strtoupper($shortName)) ? constant($const_name) : strtolower($shortName);
-        }
-
-        return $table_name;
-        $table_name = $called_class->getConstant('TABLE_NAME');
-        if($table_name !== false)
+        // try constants
+        if (($table_name = $called_class->getConstant('TABLE_NAME')) !== false)
             return $table_name;
 
-        $class_name = $called_class->getShortName();
-        
         if (defined($const_name = 'TABLE_' . strtoupper($class_name)))
             return constant($const_name);
         
+        // fallback to convention
         return strtolower($class_name);
     }
 
@@ -126,7 +118,6 @@ abstract class TableModel extends Crudites
 
         // 1. Produce OR restore a row
         $table_row = $this->isNew() ? static::table()->produce($model_data) : static::table()->restore($model_data);
-
         // 2. Apply alterations from form_model data
         $table_row->alter($model_data);
 
@@ -145,14 +136,16 @@ abstract class TableModel extends Crudites
         }
 
         try {
+            // vd($select);
             $select->run();
         } catch (CruditesException $e) {
+            // dd($e);
             return [];
         }
 
         if ($select->isSuccess()) {
             foreach ($select->retObj(get_called_class()) as $rec) {
-                  $ret[$rec->get($pk_name)] = $rec;
+                $ret[$rec->get($pk_name)] = $rec;
             }
         }
 
@@ -163,28 +156,24 @@ abstract class TableModel extends Crudites
     private static function actionnableParams($arg1, $arg2 = null): array
     {
         $unique_identifiers = null;
-        
+
         $table = get_called_class()::table();
 
         // case 3
-        if(is_array($arg1) && !empty($arg1))
-        {
+        if (is_array($arg1) && !empty($arg1)) {
             $unique_identifiers = $arg1;
         }
 
         // case 2
-        else if (is_string($arg1) && is_scalar($arg2))
-        {   
+        else if (is_string($arg1) && is_scalar($arg2)) {
             $unique_identifiers = [$arg1 => $arg2];
         }
 
         // case 1
-        else if (is_scalar($arg1) && count($table->primaryKeys()) === 1)
-        {   
+        else if (is_scalar($arg1) && count($table->primaryKeys()) === 1) {
             $pk = current($table->primaryKeys())->name();
             $unique_identifiers = [$pk => $arg1];
-        } 
-        else
+        } else
             throw new CruditesException('ARGUMENTS_ARE_NOT_ACTIONNABLE');
 
 
@@ -223,6 +212,7 @@ abstract class TableModel extends Crudites
         // vd($unique_identifiers, static::class);
 
         $records = static::any($unique_identifiers);
+        // dd($records);
         switch (count($records)) {
             case 0:
                 throw new CruditesException('NO_INSTANCE_MATCH_UNIQUE_IDENTIFIERS');
@@ -244,19 +234,18 @@ abstract class TableModel extends Crudites
     {
         try {
             return self::one($arg1, $arg2);
-        } 
-        catch (CruditesException $e) {
+        } catch (CruditesException $e) {
             return null;
         }
     }
 
-    public static function any($field_exact_values=[], $options = [])
+    public static function any($field_exact_values = [], $options = [])
     {
         $select = static::filter($field_exact_values, $options);
         return static::retrieve($select);
     }
 
-    
+
     public static function filter($filters = [], $options = []): SelectInterface
     {
         $query = (new TableModelSelector(get_called_class()))->select($filters, $options);

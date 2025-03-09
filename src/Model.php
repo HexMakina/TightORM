@@ -3,7 +3,7 @@
 namespace HexMakina\TightORM;
 
 use HexMakina\Crudites\Crudites;
-use HexMakina\Crudites\Table\Row;
+use HexMakina\Crudites\Row;
 use HexMakina\Crudites\CruditesException;
 use HexMakina\BlackBox\Database\TableInterface;
 use HexMakina\BlackBox\Database\SelectInterface;
@@ -34,7 +34,7 @@ abstract class Model extends Row
     }
 
     // Model might have properties, if not, use row data
-    public function set($prop_name, $value)
+    public function set($prop_name, $value): void
     {
         if (property_exists($this, $prop_name) === true) {
             $this->$prop_name = $value;

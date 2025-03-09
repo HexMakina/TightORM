@@ -2,14 +2,19 @@
 
 namespace HexMakina\TightORM;
 
+use HexMakina\BlackBox\Database\SchemaInterface;
 use HexMakina\Crudites\Crudites;
 use HexMakina\Crudites\CruditesException;
-use HexMakina\BlackBox\Database\TableInterface;
+use HexMakina\Crudites\Row;
 use HexMakina\BlackBox\Database\SelectInterface;
 
 abstract class TableModel extends Crudites
 {
 
+    private SchemaInterface $schema;
+    private string $table;
+
+    
     //check all primary keys are set (FIXME that doesn't work unles AIPK.. nice try)
     public function isNew(): bool
     {
@@ -19,7 +24,7 @@ abstract class TableModel extends Crudites
 
     public function getId($mode = null)
     {
-        $primary_key = static::table()->autoIncrementedPrimaryKey();
+        $primary_key = $this->schema->autoIncrementedPrimaryKey(static::table());
         if (is_null($primary_key) && count($pks = static::table()->primaryKeys()) == 1) {
             $primary_key = current($pks);
         }
@@ -55,14 +60,9 @@ abstract class TableModel extends Crudites
         return $this;
     }
 
-    public static function table(): TableInterface
-    {
-        $table = static::relationalMappingName();
 
-        return self::inspect($table);
-    }
-
-    public static function relationalMappingName(): string
+    // relational mapping
+    public static function table(): string
     {
         $reflectionClass = new \ReflectionClass(get_called_class());
 
@@ -76,7 +76,6 @@ abstract class TableModel extends Crudites
         return $table_name;
     }
 
-
     public function to_table_row($operator_id = null)
     {
         if (!is_null($operator_id) && $this->isNew() && is_null($this->get('created_by'))) {
@@ -85,8 +84,15 @@ abstract class TableModel extends Crudites
 
         $model_data = get_object_vars($this);
 
+        if($this->isNew()){
+            // $table_row = new Row($this, $model_data);
+            $table_row = new Row($this->schema, static::table(), $model_data);
+        }
+        else{
+            $table_row = new Row($this->schema);
+            $table_row->load($model_data);
+        }
         // 1. Produce OR restore a row
-        $table_row = $this->isNew() ? static::table()->produce($model_data) : static::table()->restore($model_data);
 
         // 2. Apply alterations from form_model data
         $table_row->alter($model_data);
@@ -121,7 +127,7 @@ abstract class TableModel extends Crudites
 
         if ($select->isSuccess()) {
             foreach ($select->retObj(get_called_class()) as $rec) {
-                  $ret[$rec->get($pk_name)] = $rec;
+                $ret[$rec->get($pk_name)] = $rec;
             }
         }
 

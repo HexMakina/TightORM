@@ -34,7 +34,7 @@ abstract class Model extends Row
     }
 
     // Model might have properties, if not, use row data
-    public function set($prop_name, $value)
+    public function set($prop_name, $value): void
     {
         if (property_exists($this, $prop_name) === true) {
             $this->$prop_name = $value;

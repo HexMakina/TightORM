@@ -51,20 +51,22 @@ class TightModelSelector
         }
         
         if (isset($options['limit'])) {
-            if(is_array($options['limit'])){
-                $this->statement()->limit($options['limit'][0], $options['limit'][1]);
-            }
-            elseif(is_numeric($options['limit'])){
-                $this->statement()->limit($options['limit']);
-            }
-        }
-        $this->filter_with_fields($filters);
+            [$limit, $offset] = is_array($options['limit']) ? $options['limit'] : [$options['limit'], 0];
 
+            $this->statement()->limit($limit, $offset);
+        }
+        if (isset($options['columns']) && is_array($options['columns'])) {
+            $cols = empty($options['columns']) ? ['*'] : $options['columns'];
+            $this->statement()->columns($options['columns']);
+        }
+
+        $this->filter_with_fields($filters);
+/*
         if (is_subclass_of($this->model(), '\HexMakina\kadro\Models\Interfaces\EventInterface')) {
             $this->filter_event($filters['date_start'] ?? null, $filters['date_stop'] ?? null);
             $this->statement()->orderBy([$this->model()->event_field(), 'DESC']);
         }
-
+ */
         if (isset($filters['content'])) {
             $this->statement()->whereFilterContent($filters['content']);
         }

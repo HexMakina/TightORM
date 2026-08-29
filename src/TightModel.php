@@ -1,4 +1,5 @@
 <?php
+
 namespace HexMakina\TightORM;
 
 use HexMakina\BlackBox\Database\SelectInterface;
@@ -86,6 +87,7 @@ abstract class TightModel extends TableModel implements ModelInterface
             
             // a tight model *always* match a single table row
             $table_row = $this->to_table_row($operator_id);
+            
             
             if ($table_row->isAltered()) { // someting to save ?
                 
